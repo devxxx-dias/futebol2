@@ -27,4 +27,3 @@ public record DadosCadastroPartida(
         LocalDateTime dataHora
 ) {
 }
-

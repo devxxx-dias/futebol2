@@ -12,5 +12,3 @@ public record DadosCadastroEstadio(
         String siglaEstado
 ) {
 }
-
-
