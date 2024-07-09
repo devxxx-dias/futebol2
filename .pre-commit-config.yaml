@@ -1,8 +1,0 @@
-repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0  # Verifique a última versão estável no repositório
-    hooks:
-      - id: trailing-whitespace  # Remove espaços em branco no final das linhas
-      - id: end-of-file-fixer  # Garante uma linha vazia no final dos arquivos
-      - id: check-yaml  # Verifica a sintaxe YAML
-      - id: check-json  # Verifica a sintaxe JSON

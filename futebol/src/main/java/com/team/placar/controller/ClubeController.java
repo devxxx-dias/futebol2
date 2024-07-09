@@ -74,6 +74,6 @@ public class ClubeController {
 //deverei copiar a query anterior e colocar o id mandante
 // e o id do adversario, pegar a resposta e tratar
 
-
+//test
 
 }
