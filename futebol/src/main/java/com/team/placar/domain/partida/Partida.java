@@ -1,6 +1,7 @@
 package com.team.placar.domain.partida;
 
 import com.team.placar.domain.clube.Clube;
+import com.team.placar.domain.estadio.Estadio;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +27,10 @@ public class Partida {
     @JoinColumn(name = "clube_visitante_id")
     private Clube clubeVisitante;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "estadio_id")
+    private Estadio estadio;
+
     private Integer qtdeGolsClubeMandante;
     private Integer qtdeGolsClubeVisitante;
 
@@ -37,9 +42,10 @@ public class Partida {
 
     private LocalDateTime dataHora; // "dataHora": "2024-06-16T18:12:00"
 
-    public Partida(Clube clubeMandante, Clube clubeVisitante, Integer qtdeGolsClubeMandante, Integer qtdeGolsClubeVisitante, Resultado resultadoClubeMandante, Resultado resultadoClubeVisitante, LocalDateTime dataHora) {
+    public Partida(Clube clubeMandante, Clube clubeVisitante, Estadio estadio, Integer qtdeGolsClubeMandante, Integer qtdeGolsClubeVisitante, Resultado resultadoClubeMandante, Resultado resultadoClubeVisitante, LocalDateTime dataHora) {
         this.clubeMandante = clubeMandante;
         this.clubeVisitante = clubeVisitante;
+        this.estadio = estadio;
         this.qtdeGolsClubeMandante = qtdeGolsClubeMandante;
         this.qtdeGolsClubeVisitante = qtdeGolsClubeVisitante;
         this.resultadoClubeMandante = resultadoClubeMandante;
@@ -54,6 +60,7 @@ public class Partida {
                 "clubeMandante=" + clubeMandante +
                 ", clubeVisitante=" + clubeVisitante +
                 ", qtdeGolsClubeMandante=" + qtdeGolsClubeMandante +
+                ", estadio=" + estadio +
                 ", qtdeGolsClubeVisitante=" + qtdeGolsClubeVisitante +
                 ", resultadoClubeMandante=" + resultadoClubeMandante +
                 ", resultadoClubeVisitante=" + resultadoClubeVisitante +
@@ -68,6 +75,9 @@ public class Partida {
         }
         if (dados.resultadoClubeVisitante() != null) {
             this.clubeVisitante.setNome(dados.nomeClubeVisitante());
+        }
+        if(dados.nomeEstadio() != null){
+            this.estadio.setNome(dados.nomeEstadio());
         }
         if (dados.qtdeGolsClubeMandante() != null) {
             this.qtdeGolsClubeMandante = dados.qtdeGolsClubeMandante();

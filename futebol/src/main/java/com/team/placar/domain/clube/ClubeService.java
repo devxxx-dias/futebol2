@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,14 +20,12 @@ public class ClubeService {
     @Autowired
     private ClubeRepository repository;
 
-    //para o endpoint listar um clube
     public Clube buscar(Long id) {
         var clube = repository.findByIdAndStatus(id)
                 .orElseThrow(() -> new ValidacaoException("Clube não encontrado pelo id ou não está ativo"));
 
         return clube;
     }
-
 
     public Clube salvar(DadosClubeCadastro dados) {
         var clube = new Clube(dados);
@@ -43,7 +42,7 @@ public class ClubeService {
     }
 
     public Clube validar(Long id, DadosClubeCadastro dados) {
-        var clube = repository.findByIdAndStatus(id)
+        var clube = repository.findById(id)
                 .orElseThrow(() -> new ValidacaoException("Clube não encontrado pelo id ou não está ativo"));
         clube.atualizarInformacoes(dados);
         repository.save(clube);
@@ -53,6 +52,53 @@ public class ClubeService {
     public Clube validarId(Long id) {
         var clube = repository.findById(id).orElseThrow(() -> new ValidacaoException("Partida não encontrada pelo ID"));
         return clube;
+    }
+
+    public Page filtrarParams(
+            String nome,
+            String siglaEstado,
+            String localSede,
+            String status,
+            Pageable paginacao
+    ) {
+        if (nome != null && !nome.isEmpty()) {
+            return findByNome(nome, paginacao);
+        }
+        if(siglaEstado != null && !siglaEstado.isEmpty()) {
+            return findBySiglaEstado(siglaEstado, paginacao);
+        }
+        if(localSede != null && !localSede.isEmpty()) {
+            return findByLocalSede(localSede, paginacao);
+        }
+        if(status != null) {
+            return findByStatus(status, paginacao);
+        }
+
+        var page = repository.findAll(paginacao).map(DadosClubeDetalhadamento::new);
+        return page;
+    }
+
+    public Page<Clube> findByNome(String nome, Pageable pageable) {
+        return repository.findByNomeContaining(nome, pageable);
+    }
+
+    public Page<Clube> findBySiglaEstado(String siglaEstado, Pageable pageable){
+        return repository.findBySiglaEstadoContaining(siglaEstado, pageable);
+    }
+
+    public Page<Clube>findByLocalSede(String localSede, Pageable pageable){
+        return  repository.findByLocalSede(localSede, pageable);
+    }
+
+    public Page<Clube>findByStatus(String getStatus, Pageable pageable){
+    var status = false;
+        if(getStatus.equalsIgnoreCase("ativo") || getStatus.equalsIgnoreCase("ativa")){
+          status = true;
+        }
+        if(getStatus.equalsIgnoreCase("inativo") || getStatus.equalsIgnoreCase("inativa")){
+          status=false;
+        }
+        return  repository.findByStatus(status,pageable);
     }
 
     public DadosRestropctoClubeDetalhadamento efeituarRestropctiva(Long id) {
@@ -89,5 +135,6 @@ public class ClubeService {
         var retrospectiva = repository.findRestrospectoPaginado(id, pageable);
         return retrospectiva;
     }
+
 
 }

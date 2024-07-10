@@ -35,4 +35,3 @@ public class Estadio {
     }
 }
 
-//Inicio do mapeamento do banco  e termino dos endpoints estadios

@@ -12,6 +12,8 @@ public record DadosCadastroPartida(
         String nomeClubeMandante,
         @NotBlank(message = "O Nome do clube Visitante deve ser infomado")
         String nomeClubeVisitante,
+        @NotBlank(message = "O nome do estádio deve ser inserido")
+        String nomeEstadio,
         @NotNull(message = "A quantidade de gols do clube mandante deve ser informado")
         @Min(value = 0, message = "A quantidade de gols do clube mandante não pode ser negativa")
         Integer qtdeGolsClubeMandante,

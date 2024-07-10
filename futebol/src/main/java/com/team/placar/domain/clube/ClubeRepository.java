@@ -21,4 +21,11 @@ public interface ClubeRepository  extends JpaRepository<Clube, Long> {
     @Query("SELECT p FROM partida p WHERE p.clubeMandante.id = :id OR p.clubeVisitante.id = :id")
     Page<Partida> findRestrospectoPaginado(@Param("id") Long id, Pageable pageable);
 
+    Page<Clube> findByNomeContaining(String nome, Pageable pageable);
+
+    Page<Clube> findBySiglaEstadoContaining(String siglaEstado, Pageable pageable);
+
+    Page<Clube> findByLocalSede(String localSede, Pageable pageable);
+
+    Page<Clube> findByStatus(Boolean status, Pageable pageable);
 }

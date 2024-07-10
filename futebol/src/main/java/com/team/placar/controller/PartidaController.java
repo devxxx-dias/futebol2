@@ -7,10 +7,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
 
 @RestController
 @RequestMapping("partida")
@@ -52,9 +55,18 @@ public class PartidaController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<DadosDetalhadamentoPartida>> listarPartidas(@PageableDefault(size = 10) Pageable paginacao){
-        var page = repository.findAll(paginacao).map(DadosDetalhadamentoPartida::new);
+    public ResponseEntity<Page<DadosDetalhadamentoPartida>> listarPartidas(
+            @RequestParam(required = false) String clube,
+            @RequestParam(required = false) String estadio,
+            @PageableDefault(size = 10) Pageable paginacao){
+
+        var page = service.filtrarParams(clube, estadio, paginacao);
         return ResponseEntity.ok(page);
     }
+
+//    10. Listar partidas: A aplicação deverá permitir listar todas as partidas,
+//    ou filtrar a busca por um clube, ou por um estádio, permitindo a paginação dos resultados,
+//    e a ordenação dos resultados por estes mesmos campos,
+//    de forma ascendente ou descendente.
 
 }

@@ -1,6 +1,8 @@
 package com.team.placar.infra.securtiy;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.NonUniqueResultException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -20,8 +22,17 @@ public class TratadorDeErros {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
     @ExceptionHandler(HttpMessageNotReadableException.class)
-
     public ResponseEntity tratarErrodoEnumPartida( HttpMessageNotReadableException ex){
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity tratarErroUniqueBancoDeDados(DataIntegrityViolationException ex){
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(NonUniqueResultException.class)
+    public ResponseEntity tratarErroDadosDuplicado(NonUniqueResultException ex){
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 

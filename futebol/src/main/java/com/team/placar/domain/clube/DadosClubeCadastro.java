@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 
 public record DadosClubeCadastro(
-        @NotBlank
+        @NotBlank(message = "O nome do clube precisa ser inserido")
         String nome,
         @Pattern(regexp = "^[A-Za-z]{2}$", message = "SiglaEstado deve ter exatamente 2 caracteres e apenas letras")
         String siglaEstado,
@@ -16,7 +16,7 @@ public record DadosClubeCadastro(
         String localSede,
         @PastOrPresent
         LocalDate dataCriacao,
-        @NotNull
+        @NotNull(message = "Você deve apenas inserir os valores true ou false")
         Boolean status
 ) {
 

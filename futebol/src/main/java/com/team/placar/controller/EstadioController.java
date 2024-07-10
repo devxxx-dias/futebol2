@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
 
 @RestController
 @RequestMapping("estadio")
@@ -26,7 +29,9 @@ public class EstadioController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroEstadio dados, UriComponentsBuilder uriBuilder){
+    public ResponseEntity cadastrar(
+            @RequestBody @Valid DadosCadastroEstadio dados,
+            UriComponentsBuilder uriBuilder){
         var estadio = service.salvar(dados);
         var uri = uriBuilder.path("estadio/{id}").buildAndExpand(estadio.getId()).toUri();
         return  ResponseEntity.created(uri).body(new DadosDetalhadamentoEstadio(estadio));
@@ -34,7 +39,9 @@ public class EstadioController {
 
     @PutMapping("{id}")
     @Transactional
-    public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizacaoEstadio dados, @PathVariable Long id){
+    public ResponseEntity atualizar(
+            @RequestBody @Valid DadosAtualizacaoEstadio dados,
+            @PathVariable Long id){
         System.out.println(id);
         var estadio = service.atualizar(dados, id);
         return ResponseEntity.ok().body(new DadosDetalhadamentoEstadio(estadio));
@@ -47,7 +54,9 @@ public class EstadioController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<DadosDetalhadamentoEstadio>> listarEstadios(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao){
+    public ResponseEntity<Page<DadosDetalhadamentoEstadio>> listarEstadios(
+            @PageableDefault(size = 10, sort = {"nome"})
+            Pageable paginacao){
         var page = repository.findAll(paginacao).map(DadosDetalhadamentoEstadio::new);
         return ResponseEntity.ok(page);
     }
