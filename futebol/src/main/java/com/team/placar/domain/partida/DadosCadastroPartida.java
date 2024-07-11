@@ -1,5 +1,6 @@
 package com.team.placar.domain.partida;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,6 +27,7 @@ public record DadosCadastroPartida(
         Resultado resultadoClubeVisitante,
         @NotNull(message = "Infome a data e a hora da partida, formato YYYY-MM-DDTHH:MM")
         @PastOrPresent(message = "Não é possível salvar uma partida em uma data futura")
+        @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
         LocalDateTime dataHora
 ) {
 }

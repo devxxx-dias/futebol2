@@ -3,16 +3,11 @@ package com.team.placar.domain.clube;
 
 import com.team.placar.domain.partida.Partida;
 import com.team.placar.domain.partida.Resultado;
-import com.team.placar.infra.securtiy.ValidacaoException;
+import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class ClubeService {
@@ -41,7 +36,7 @@ public class ClubeService {
         repository.save(clube);
     }
 
-    public Clube validar(Long id, DadosClubeCadastro dados) {
+    public Clube atualizar(Long id, DadosClubeCadastro dados) {
         var clube = repository.findById(id)
                 .orElseThrow(() -> new ValidacaoException("Clube não encontrado pelo id ou não está ativo"));
         clube.atualizarInformacoes(dados);

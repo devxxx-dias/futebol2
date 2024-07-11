@@ -44,7 +44,7 @@ public class ClubeController {
     public ResponseEntity atualizar(
             @RequestBody @Valid DadosClubeCadastro dados,
             @PathVariable Long id) {
-        var clube = clubeService.validar(id, dados);
+        var clube = clubeService.atualizar(id, dados);
         return ResponseEntity.ok().body(new DadosClubeDetalhadamento(clube));
     }
 
@@ -92,7 +92,8 @@ public class ClubeController {
 
 
 
-
+    //TODO verificar mais regras de negocios para serem aplicadas no validadorPartida
+//TODO terminar de implementar os testes de todos os endpoints
 
 
 

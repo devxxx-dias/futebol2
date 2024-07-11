@@ -1,6 +1,7 @@
 package com.team.placar.domain.clube;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record DadosClubeDetalhadamento(
         Long id,

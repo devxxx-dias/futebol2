@@ -6,6 +6,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record DadosClubeCadastro(
         @NotBlank(message = "O nome do clube precisa ser inserido")

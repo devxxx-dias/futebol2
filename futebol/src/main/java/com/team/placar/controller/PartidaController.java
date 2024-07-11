@@ -3,17 +3,13 @@ package com.team.placar.controller;
 import com.team.placar.domain.partida.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
 
 @RestController
 @RequestMapping("partida")
@@ -27,15 +23,15 @@ public class PartidaController {
     @PostMapping
     @Transactional
     public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroPartida dados, UriComponentsBuilder uriBuilder) {
-        var partida = service.validarDados(dados);
+        var partida = service.salvar(dados);
         var uri = uriBuilder.path("{partida/{id}").buildAndExpand(partida.getId()).toUri();
         return ResponseEntity.created(uri).body(new DadosDetalhadamentoPartida(partida));
     }
 
     @PutMapping("{id}")
     @Transactional
-    public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizarPartida dados, @PathVariable Long id) {
-        var partida = service.validarDadosID(dados,id);
+    public ResponseEntity atualizar(@RequestBody @Valid DadosCadastroPartida dados, @PathVariable Long id) {
+        var partida = service.atualizarPartidaPeloId(dados,id);
         return ResponseEntity.ok().body(new DadosDetalhadamentoPartida(partida));
     }
 

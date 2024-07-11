@@ -1,6 +1,6 @@
 package com.team.placar.domain.estadio;
 
-import com.team.placar.infra.securtiy.ValidacaoException;
+import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

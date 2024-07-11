@@ -68,8 +68,7 @@ public class Partida {
                 '}';
     }
 
-    public void atualizarInformacoes(Long id, DadosAtualizarPartida dados) {
-        this.id = id;
+    public void atualizarInformacoes(Long id, DadosCadastroPartida dados) {
         if (dados.nomeClubeMandante() != null) {
             this.clubeMandante.setNome(dados.nomeClubeMandante());
         }

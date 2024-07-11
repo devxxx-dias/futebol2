@@ -1,4 +1,4 @@
-package com.team.placar.infra.securtiy;
+package com.team.placar.infra.securtiy.tratamentoExceptions;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NonUniqueResultException;
