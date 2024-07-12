@@ -27,7 +27,6 @@ public record DadosCadastroPartida(
         Resultado resultadoClubeVisitante,
         @NotNull(message = "Infome a data e a hora da partida, formato YYYY-MM-DDTHH:MM")
         @PastOrPresent(message = "Não é possível salvar uma partida em uma data futura")
-        @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
         LocalDateTime dataHora
 ) {
 }

@@ -27,9 +27,6 @@ public class PartidaService {
         var estadio = repository.findEstadioByNome(dados.nomeEstadio())
                 .orElseThrow(() -> new ValidacaoException("Estádio não encontrado pelo nome fornecido"));
 
-        if (!clubeMandante.getLocalSede().equals(estadio.getCidade())) {
-            throw new ValidacaoException("Verifique se o estádio é do clube da casa (mandante)");
-        }
         var partida = new Partida(
                 clubeMandante,
                 clubeVisitante,

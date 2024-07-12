@@ -9,7 +9,7 @@ public record DadosClubeDetalhadamento(
         String siglaEstado,
         String localSede,
         LocalDate dataCriacao,
-        String status
+        Boolean status
 ) {
     public DadosClubeDetalhadamento(Clube clube) {
         this(
@@ -18,7 +18,7 @@ public record DadosClubeDetalhadamento(
                 clube.getSiglaEstado(),
                 clube.getLocalSede(),
                 clube.getDataCriacao(),
-                (clube.getStatus() == true ? "Ativo" : "Inativo")
+                clube.getStatus()
         );
 
     }

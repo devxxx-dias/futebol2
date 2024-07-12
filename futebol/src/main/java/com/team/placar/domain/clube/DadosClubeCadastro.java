@@ -13,9 +13,9 @@ public record DadosClubeCadastro(
         String nome,
         @Pattern(regexp = "^[A-Za-z]{2}$", message = "SiglaEstado deve ter exatamente 2 caracteres e apenas letras")
         String siglaEstado,
-        @NotBlank
+        @NotBlank( message = "A localidade da sede deve ser inserida")
         String localSede,
-        @PastOrPresent
+        @PastOrPresent(message = "Só é permitido o cadastro de partidas já realizadas")
         LocalDate dataCriacao,
         @NotNull(message = "Você deve apenas inserir os valores true ou false")
         Boolean status

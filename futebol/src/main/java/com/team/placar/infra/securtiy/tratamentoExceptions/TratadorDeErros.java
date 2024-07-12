@@ -9,6 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 
 @RestControllerAdvice
@@ -34,6 +35,12 @@ public class TratadorDeErros {
     @ExceptionHandler(NonUniqueResultException.class)
     public ResponseEntity tratarErroDadosDuplicado(NonUniqueResultException ex){
         return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity tratarErroTipo(MethodArgumentTypeMismatchException ex){
+        String menssage = "Mensagem: Verifique se o dado inserido é de fato um número ou uma letra ---";
+        return ResponseEntity.badRequest().body( menssage + ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
