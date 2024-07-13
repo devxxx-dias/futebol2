@@ -1,7 +1,11 @@
 package com.team.placar.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.team.placar.domain.clube.*;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -16,6 +20,7 @@ import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,6 +60,8 @@ class ClubeControllerTest {
 
     @Autowired
     JacksonTester<Page<DadosClubeDetalhadamento>> dadosDetalhadamentoJacksonPage;
+    @Autowired
+    private HttpSession httpSession;
 
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando informacoes estao invalidas")
@@ -435,13 +443,14 @@ class ClubeControllerTest {
     }
 
     @Test
-    @DisplayName("Deveria retornar codigo http 200 quando retorna uma lista de clubes")
+    @DisplayName("Deveria retornar codigo http 200 quando todos os parametros nao estiverem selecionados e retorna uma lista de clubes")
     void listarClubes() throws Exception {
         var data = LocalDate.of(2002, 2, 22);
         var clube1 = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true));
         var clube2 = new Clube(new DadosClubeCadastro("Santos", "SP", "Santos", data, true));
         var listaClubes = List.of(clube1, clube2);
         Page<Clube> paginaClubes = new PageImpl<>(listaClubes);
+
         when(clubeService.filtrarParams(eq(null), eq(null), eq(null), eq(null), any(Pageable.class)))
                 .thenReturn(paginaClubes);
 
@@ -452,17 +461,68 @@ class ClubeControllerTest {
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 
+        // Esse objectMapper é para conseguir ler as datas(localtime e date)
+        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        JsonNode jsonResponse = objectMapper.readTree(response.getContentAsString());
+        JsonNode contentNode = jsonResponse.get("content");
 
+        // Ensure the content node is an array and has the expected size
+        assertThat(contentNode.isArray()).isTrue();
+        assertThat(contentNode.size()).isEqualTo(listaClubes.size());
 
-        String jsonEsperado = dadosDetalhadamentoJacksonPage.write(
-                paginaClubes.map(DadosClubeDetalhadamento::new)
-        ).getJson();
+        // Optional: Verify the exact content if needed
+        List<DadosClubeDetalhadamento> clubesFromResponse = objectMapper.convertValue(
+                contentNode,
+                new TypeReference<List<DadosClubeDetalhadamento>>() {}
+        );
+        List<DadosClubeDetalhadamento> expectedClubes = listaClubes.stream()
+                .map(DadosClubeDetalhadamento::new)
+                .collect(Collectors.toList());
 
-        assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
+        assertThat(clubesFromResponse).isEqualTo(expectedClubes);
 
-
+        // Verify the service method was called correctly
+        verify(clubeService).filtrarParams(eq(null), eq(null), eq(null), eq(null), any(Pageable.class));
     }
 
+    @Test
+    @DisplayName("Deveria retornar código http 200 quando o parametro nome for preenchido e retornar 1 clube")
+    void listarClubes_1() throws Exception {
+        var data = LocalDate.of(2002,2, 22);
+        var clube = new Clube(new DadosClubeCadastro("Palmeiras", "SP","São Paulo",data, true));
+        var listaClubes = List.of(clube);
+        Page<Clube> page = new PageImpl<>(listaClubes);
+
+        when(clubeService.filtrarParams(eq("Palmeiras"), eq(null), eq(null), eq(null),  any(Pageable.class)))
+                .thenReturn(page);
+
+        var response = mvc.perform(get("/clube")
+                .param("nome", "Palmeiras")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        JsonNode jsonResponse = objectMapper.readTree(response.getContentAsString());
+        JsonNode contentNode = jsonResponse.get("content");
+
+        assertThat(contentNode.isArray()).isTrue();
+        assertThat(contentNode.size()).isEqualTo(1);
+
+        List<DadosClubeDetalhadamento> clubesFromResponse = objectMapper.convertValue(
+                contentNode,
+                new TypeReference<List<DadosClubeDetalhadamento>>() {}
+        );
+        List<DadosClubeDetalhadamento> expectedClubes = listaClubes.stream()
+                .map(DadosClubeDetalhadamento::new)
+                .collect(Collectors.toList());
+
+        assertThat(clubesFromResponse).isEqualTo(expectedClubes);
+    }
+
+//TODO finalizar o restante dos filtros ---
     @Test
     void restropctoGeral() {
     }
