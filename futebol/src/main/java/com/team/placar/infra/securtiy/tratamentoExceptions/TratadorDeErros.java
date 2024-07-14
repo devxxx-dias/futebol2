@@ -22,6 +22,7 @@ public class TratadorDeErros {
     public ResponseEntity tratarErroRegraDeNegocio(ValidacaoException ex){
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
+    
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity tratarErrodoEnumPartida( HttpMessageNotReadableException ex){
         return ResponseEntity.badRequest().body(ex.getMessage());

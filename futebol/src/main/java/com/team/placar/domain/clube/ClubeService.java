@@ -4,6 +4,7 @@ package com.team.placar.domain.clube;
 import com.team.placar.domain.partida.Partida;
 import com.team.placar.domain.partida.Resultado;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +18,7 @@ public class ClubeService {
 
     public Clube buscar(Long id) {
         var clube = repository.findByIdAndStatus(id)
-                .orElseThrow(() -> new ValidacaoException("Clube não encontrado pelo id ou não está ativo"));
+                .orElseThrow(() -> new EntityNotFoundException("Clube não encontrado pelo id ou não está ativo"));
 
         return clube;
     }
@@ -45,7 +46,7 @@ public class ClubeService {
     }
 
     public Clube validarId(Long id) {
-        var clube = repository.findById(id).orElseThrow(() -> new ValidacaoException("Partida não encontrada pelo ID"));
+        var clube = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Partida não encontrada pelo ID"));
         return clube;
     }
 
@@ -88,19 +89,19 @@ public class ClubeService {
     }
 
     public Page<Clube> findByStatus(String getStatus, Pageable pageable) {
-        var status = false;
-        if (getStatus.equalsIgnoreCase("ativo") || getStatus.equalsIgnoreCase("ativa")) {
-            status = true;
+
+        if (getStatus.equalsIgnoreCase("ativo") || getStatus.equalsIgnoreCase("ativa") || getStatus.equalsIgnoreCase("true")) {
+            return repository.findByStatus(true, pageable);
         }
-        if (getStatus.equalsIgnoreCase("inativo") || getStatus.equalsIgnoreCase("inativa")) {
-            status = false;
+        if (getStatus.equalsIgnoreCase("inativo") || getStatus.equalsIgnoreCase("inativa") || getStatus.equalsIgnoreCase("false")) {
+            return repository.findByStatus(false, pageable);
         }
-        return repository.findByStatus(status, pageable);
+        return repository.findByStatus(null, pageable);
     }
 
     public DadosRestropctoClubeDetalhadamento efeituarRestropctiva(Long id) {
         var retrospectiva = repository.findRestrospecto(id);
-        retrospectiva.forEach(System.out::println);
+
         var clube = validarId(id);
         var totalVitorias = 0;
         var totalDerrotas = 0;
