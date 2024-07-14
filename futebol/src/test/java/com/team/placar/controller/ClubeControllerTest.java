@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -509,7 +510,7 @@ class ClubeControllerTest {
         JsonNode contentNode = jsonResponse.get("content");
 
         assertThat(contentNode.isArray()).isTrue();
-        assertThat(contentNode.size()).isEqualTo(1);
+        assertThat(contentNode.size()).isEqualTo(listaClubes.size());
 
         List<DadosClubeDetalhadamento> clubesFromResponse = objectMapper.convertValue(
                 contentNode,
@@ -522,7 +523,26 @@ class ClubeControllerTest {
         assertThat(clubesFromResponse).isEqualTo(expectedClubes);
     }
 
-//TODO finalizar o restante dos filtros ---
+
+
+    @Test
+    @DisplayName("Deveria retornar código http 200 quando o parametro nome for preenchido com um clube inexistente no banco de dados")
+    void listarClubes_2() throws Exception {
+
+        when(clubeService.findByNome(eq("aaa"), any(Pageable.class))).thenReturn(null);
+
+        var response = mvc.perform(get("/clube")
+                        .param("nome", "aaa")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.getContentLength()).isEqualTo(0);
+        verify(clubeService).filtrarParams(eq("aaa"), eq(null), eq(null), eq(null), any(Pageable.class));
+
+    }
+
     @Test
     void restropctoGeral() {
     }

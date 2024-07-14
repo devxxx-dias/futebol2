@@ -56,16 +56,18 @@ public class ClubeService {
             String status,
             Pageable paginacao
     ) {
+
         if (nome != null && !nome.isEmpty()) {
             return findByNome(nome, paginacao);
         }
-        if(siglaEstado != null && !siglaEstado.isEmpty()) {
+
+        if (siglaEstado != null && !siglaEstado.isEmpty()) {
             return findBySiglaEstado(siglaEstado, paginacao);
         }
-        if(localSede != null && !localSede.isEmpty()) {
+        if (localSede != null && !localSede.isEmpty()) {
             return findByLocalSede(localSede, paginacao);
         }
-        if(status != null) {
+        if (status != null) {
             return findByStatus(status, paginacao);
         }
 
@@ -77,23 +79,23 @@ public class ClubeService {
         return repository.findByNomeContaining(nome, pageable);
     }
 
-    public Page<Clube> findBySiglaEstado(String siglaEstado, Pageable pageable){
+    public Page<Clube> findBySiglaEstado(String siglaEstado, Pageable pageable) {
         return repository.findBySiglaEstadoContaining(siglaEstado, pageable);
     }
 
-    public Page<Clube>findByLocalSede(String localSede, Pageable pageable){
-        return  repository.findByLocalSede(localSede, pageable);
+    public Page<Clube> findByLocalSede(String localSede, Pageable pageable) {
+        return repository.findByLocalSede(localSede, pageable);
     }
 
-    public Page<Clube>findByStatus(String getStatus, Pageable pageable){
-    var status = false;
-        if(getStatus.equalsIgnoreCase("ativo") || getStatus.equalsIgnoreCase("ativa")){
-          status = true;
+    public Page<Clube> findByStatus(String getStatus, Pageable pageable) {
+        var status = false;
+        if (getStatus.equalsIgnoreCase("ativo") || getStatus.equalsIgnoreCase("ativa")) {
+            status = true;
         }
-        if(getStatus.equalsIgnoreCase("inativo") || getStatus.equalsIgnoreCase("inativa")){
-          status=false;
+        if (getStatus.equalsIgnoreCase("inativo") || getStatus.equalsIgnoreCase("inativa")) {
+            status = false;
         }
-        return  repository.findByStatus(status,pageable);
+        return repository.findByStatus(status, pageable);
     }
 
     public DadosRestropctoClubeDetalhadamento efeituarRestropctiva(Long id) {
