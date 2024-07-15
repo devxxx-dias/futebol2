@@ -20,6 +20,12 @@ public class TratadorDeErros {
     public ResponseEntity tratarErro404(EntityNotFoundException ex){
         return  ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(ex.getMessage());}
 
+    @ExceptionHandler(ConflitException.class)
+    public ResponseEntity tratarErro409(ConflitException ex){
+        return ResponseEntity.status(HttpStatus.CONFLICT.value()).body(ex.getMessage());
+
+    }
+
     @ExceptionHandler(ValidacaoException.class)
     public ResponseEntity tratarErroRegraDeNegocio(ValidacaoException ex){
         return ResponseEntity.badRequest().body(ex.getMessage());

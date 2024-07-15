@@ -2,6 +2,7 @@ package com.team.placar.domain.clube;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.team.placar.domain.estadio.Estadio;
+import com.team.placar.domain.estadio.EstadioRepository;
 import com.team.placar.domain.partida.DadosCadastroPartida;
 import com.team.placar.domain.partida.Partida;
 import com.team.placar.domain.partida.PartidaRepository;
@@ -40,6 +41,9 @@ class ClubeRepositoryTest {
     PartidaRepository partidaRepository;
 
     @Autowired
+    EstadioRepository estadioRepository;
+
+    @Autowired
     TestEntityManager em;
 
     @Test
@@ -74,6 +78,31 @@ class ClubeRepositoryTest {
         assertThat(retrospecto).extracting("clubeMandante")
                 .allMatch(clube -> ((Clube) clube).getId().equals(clubeId) || ((Partida) clube).getClubeVisitante().getId().equals(clubeId));
     }
+
+    @Test
+    @DisplayName("Deveria retornar FALSE quando é passada uma data de criacao futura após a data de uma partida")
+    void checarDataCriacaoComDataPartida1() {
+        Long clubeId = clube1.getId();
+        LocalDateTime data = LocalDateTime.now().plusYears(1L);
+        var existeData = clubeRepository.existsPartidasByClubeIdAndDataBefore(clubeId, data);
+        assertThat(existeData).isFalse();
+    }
+
+    @Test
+    @DisplayName("Deveria retornar TRUE quando é passada uma data de criação anterior a alguma data da partida")
+    void checarDataCriacaoComDataPartida_1() {
+        Long clubeId = clube1.getId();
+        LocalDateTime data = dataCriacao.atStartOfDay().minusMonths(10L);
+        var existeData = clubeRepository.existsPartidasByClubeIdAndDataBefore(clubeId, data);
+        assertThat(existeData).isTrue();
+    }
+
+
+
+
+
+
+
 
     private DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("dd-MM-yyyy'T'HH:mm");
     private LocalDateTime dataCriacaoTime = LocalDateTime.parse("02-02-2022T12:22", formatterTime);
