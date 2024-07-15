@@ -31,7 +31,7 @@ public class ClubeService {
 
     public void deletar(Long id) {
         var clube = repository.findByIdAndStatus(id)
-                .orElseThrow(() -> new ValidacaoException("Clube não encontrado pelo id ou não está ativo"));
+                .orElseThrow(() -> new EntityNotFoundException("Clube não encontrado pelo id ou não está ativo"));
 
         clube.deletar();
         repository.save(clube);

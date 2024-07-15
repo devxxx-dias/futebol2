@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.team.placar.domain.clube.*;
-import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -60,9 +60,6 @@ class ClubeControllerTest {
     @Autowired
     JacksonTester<DadosRestropctoClubeDetalhadamento> dadosRestropctoDetalhadamentoJackson;
 
-    @Autowired
-    private HttpSession httpSession;
-
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando informacoes estao invalidas")
     void cadastrarCenario1() throws Exception {
@@ -81,7 +78,7 @@ class ClubeControllerTest {
         var response = mvc.perform(post("/clube")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroJacksonTester.write(
-                                new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true)
+                                dadosCadastro
                         ).getJson())
                 )
                 .andReturn().getResponse();
@@ -100,7 +97,7 @@ class ClubeControllerTest {
         var data = LocalDate.of(2002, 02, 22);
         var dadosCadastro = new DadosClubeCadastro(null, "SP", "São Paulo", data, true);
 
-
+        when(clubeService.salvar(any())).thenReturn(new Clube(dadosCadastro));
         var response = mvc.perform(post("/clube")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dadosCadastroJacksonTester.write(dadosCadastro).getJson())).andReturn().getResponse();
@@ -120,7 +117,7 @@ class ClubeControllerTest {
         var data = LocalDate.of(2002, 02, 22);
         var dadosCadastro = new DadosClubeCadastro("Palmeiras", "", "São Paulo", data, true);
 
-
+        when(clubeService.salvar(any())).thenReturn(new Clube(dadosCadastro));
         var response = mvc.perform(post("/clube")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dadosCadastroJacksonTester.write(dadosCadastro).getJson())).andReturn().getResponse();
@@ -139,7 +136,7 @@ class ClubeControllerTest {
         var data = LocalDate.of(2002, 02, 22);
         var dadosCadastro = new DadosClubeCadastro("Palmeiras", "S", "São Paulo", data, true);
 
-
+        when(clubeService.salvar(any())).thenReturn(new Clube(dadosCadastro));
         var response = mvc.perform(post("/clube")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dadosCadastroJacksonTester.write(dadosCadastro).getJson())).andReturn().getResponse();
@@ -158,6 +155,7 @@ class ClubeControllerTest {
         var data = LocalDate.of(2002, 02, 22);
         var dadosCadastro = new DadosClubeCadastro("Palmeiras", "SSP", "São Paulo", data, true);
 
+        when(clubeService.salvar(any())).thenReturn(new Clube(dadosCadastro));
         var response = mvc.perform(post("/clube")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dadosCadastroJacksonTester.write(dadosCadastro).getJson())).andReturn().getResponse();
@@ -176,7 +174,7 @@ class ClubeControllerTest {
         var data = LocalDate.of(2002, 02, 22);
         var dadosCadastro = new DadosClubeCadastro("Palmeiras", "SP", "", data, true);
 
-
+        when(clubeService.salvar(any())).thenReturn(new Clube(dadosCadastro));
         var response = mvc.perform(post("/clube")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dadosCadastroJacksonTester.write(dadosCadastro).getJson())).andReturn().getResponse();
@@ -195,7 +193,7 @@ class ClubeControllerTest {
         var data = LocalDate.of(2025, 02, 22);
         var dadosCadastro = new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true);
 
-
+        when(clubeService.salvar(any())).thenReturn(new Clube(dadosCadastro));
         var response = mvc.perform(post("/clube")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dadosCadastroJacksonTester.write(dadosCadastro).getJson())).andReturn().getResponse();
@@ -215,6 +213,7 @@ class ClubeControllerTest {
         var data = LocalDate.of(2002, 02, 22);
         var dadosCadastro = new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, null);
 
+        when(clubeService.salvar(any())).thenReturn(new Clube(dadosCadastro));
         var response = mvc.perform(post("/clube")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dadosCadastroJacksonTester.write(dadosCadastro).getJson())).andReturn().getResponse();
@@ -260,6 +259,9 @@ class ClubeControllerTest {
         var data = LocalDate.of(2002, 02, 22);
         var dadosAtualizados = new DadosClubeCadastro(null, "SP", "São Paulo", data, true);
 
+        when(clubeService.atualizar(any(Long.class), any(DadosClubeCadastro.class)))
+                .thenReturn(null);
+
         var response = mvc.perform(put("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroJacksonTester.write(dadosAtualizados).getJson()))
@@ -280,6 +282,8 @@ class ClubeControllerTest {
         var data = LocalDate.of(2002, 02, 22);
         var dadosAtualizados = new DadosClubeCadastro("Palmeiras", "", "São Paulo", data, true);
 
+        when(clubeService.atualizar(any(Long.class), any(DadosClubeCadastro.class)))
+                .thenReturn(null);
 
         var response = mvc.perform(put("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -296,11 +300,13 @@ class ClubeControllerTest {
 
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando a sigla do estado fora do padão de 2 letras")
-    void atualizarCenario4() throws Exception {
+    void atualizarCenario3_1() throws Exception {
         var id = 1L;
         var data = LocalDate.of(2002, 02, 22);
         var dadosAtualizados = new DadosClubeCadastro("Palmeiras", "S", "São Paulo", data, true);
 
+        when(clubeService.atualizar(any(Long.class), any(DadosClubeCadastro.class)))
+                .thenReturn(null);
 
         var response = mvc.perform(put("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -317,11 +323,13 @@ class ClubeControllerTest {
 
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando a sigla do estado tiver mais de 2 letras")
-    void atualizarCenario5() throws Exception {
+    void atualizarCenario3_2() throws Exception {
         var id = 1L;
         var data = LocalDate.of(2002, 02, 22);
         var dadosAtualizados = new DadosClubeCadastro("Palmeiras", "SSP", "São Paulo", data, true);
-        ;
+
+        when(clubeService.atualizar(any(Long.class), any(DadosClubeCadastro.class)))
+                .thenReturn(null);
 
         var response = mvc.perform(put("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -338,11 +346,13 @@ class ClubeControllerTest {
 
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando o localSede não for inserido")
-    void atualizarCenario6() throws Exception {
+    void atualizarCenario4() throws Exception {
         var id = 1L;
         var data = LocalDate.of(2002, 02, 22);
         var dadosAtualizados = new DadosClubeCadastro("Palmeiras", "SP", "", data, true);
-        ;
+
+        when(clubeService.atualizar(any(Long.class), any(DadosClubeCadastro.class)))
+                .thenReturn(null);
 
         var response = mvc.perform(put("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -358,11 +368,13 @@ class ClubeControllerTest {
 
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando a data inserida for uma data futura")
-    void atualizarCenario7() throws Exception {
+    void atualizarCenario5() throws Exception {
         var id = 1L;
         var data = LocalDate.of(2025, 02, 22);
         var dadosAtualizados = new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true);
-        ;
+
+        when(clubeService.atualizar(any(Long.class), any(DadosClubeCadastro.class)))
+                .thenReturn(null);
 
         var response = mvc.perform(put("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -379,11 +391,13 @@ class ClubeControllerTest {
 
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando o status for null e não aceita os valores true ou false")
-    void atualizarCenario8() throws Exception {
+    void atualizarCenario6() throws Exception {
         var id = 1L;
         var data = LocalDate.of(2022, 02, 22);
         var dadosAtualizados = new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, null);
-        ;
+
+        when(clubeService.atualizar(any(Long.class), any(DadosClubeCadastro.class)))
+                .thenReturn(null);
 
         var response = mvc.perform(put("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -412,11 +426,26 @@ class ClubeControllerTest {
     }
 
     @Test
-    @DisplayName("Deveria retornar um clube pelo Id informado")
+    @DisplayName("Deveria retornar codigo http 404  quando o id não for encontrado")
+    void deletarCenario2() throws Exception {
+        Long id = 1L;
+
+        //For void Return
+        Mockito.doThrow(new EntityNotFoundException())
+                .when(clubeService).deletar(id);
+
+        var response = mvc.perform(delete("/clube/{id}", id))
+                .andReturn().getResponse();
+
+        verify(clubeService).deletar(id);
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
+    @DisplayName("Deveria retornar codigo http 200 quando encontrado um clube pelo Id informado")
     void buscarCenario1() throws Exception {
         Long id = 1L;
         var data = LocalDate.of(2002, 2, 22);
-
         var dadosCadastro = new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true);
         var clubleEncontrado = new Clube(dadosCadastro);
 
@@ -432,7 +461,8 @@ class ClubeControllerTest {
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 
-        var jsonEsperado = dadosDetalhadamentoJacksonTester.write(new DadosClubeDetalhadamento(clubleEncontrado)).getJson();
+        var jsonEsperado = dadosDetalhadamentoJacksonTester
+                .write(new DadosClubeDetalhadamento(clubleEncontrado)).getJson();
 
         assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
     }
@@ -440,11 +470,13 @@ class ClubeControllerTest {
 
 
     @Test
-    @DisplayName("Deveria retornar HTTP 404 quando o clube não for encontrado pelo Id")
-    void buscarClubeNaoEncontrado() throws Exception {
+    @DisplayName("Deveria retornar codigo HTTP 404 quando o clube não for encontrado pelo Id")
+    void buscarCenario2() throws Exception {
         Long id = 999L;
 
-        when(clubeService.buscar(id)).thenThrow(new EntityNotFoundException("Clube não encontrado pelo id ou não está ativo"));
+        when(clubeService.buscar(id))
+                .thenThrow(new EntityNotFoundException("Clube não encontrado pelo id ou não está ativo"));
+
         var response = mvc.perform(get("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
@@ -453,13 +485,9 @@ class ClubeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
-
-
-    //TODO Realizar Cenario quando não for localizado
-
     @Test
-    @DisplayName("Deveria retornar codigo http 200 quando todos os parametros nao estiverem selecionados e retorna uma lista de clubes")
-    void listarClubes() throws Exception {
+    @DisplayName("Deveria retornar codigo http 200 quando TODOS os parametros NÃO estiverem selecionados e retorna uma lista de clubes")
+    void listarClubesCenario1() throws Exception {
         var data = LocalDate.of(2002, 2, 22);
         var clube1 = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true));
         var clube2 = new Clube(new DadosClubeCadastro("Santos", "SP", "Santos", data, true));
@@ -498,18 +526,19 @@ class ClubeControllerTest {
     }
 
     @Test
-    @DisplayName("Deveria retornar código http 200 quando o parametro nome for preenchido e retornar 1 clube")
-    void listarClubes_1() throws Exception {
+    @DisplayName("Deveria retornar código http 200 quando o parametro NOME for preenchido e retornar 1 clube")
+    void listarClubesCenario2() throws Exception {
+        String nome = "Palmeiras";
         var data = LocalDate.of(2002, 2, 22);
-        var clube = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true));
+        var clube = new Clube(new DadosClubeCadastro(nome, "SP", "São Paulo", data, true));
         var listaClubes = List.of(clube);
         Page<Clube> page = new PageImpl<>(listaClubes);
 
-        when(clubeService.filtrarParams(eq("Palmeiras"), eq(null), eq(null), eq(null), any(Pageable.class)))
+        when(clubeService.filtrarParams(eq(nome), eq(null), eq(null), eq(null), any(Pageable.class)))
                 .thenReturn(page);
 
         var response = mvc.perform(get("/clube")
-                        .param("nome", "Palmeiras")
+                        .param("nome", nome)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -536,24 +565,24 @@ class ClubeControllerTest {
     }
 
     @Test
-    @DisplayName("Deveria retornar código http 200 quando o parametro nome for preenchido com um clube inexistente no banco de dados")
-    void listarClubes_2() throws Exception {
-
-        when(clubeService.findByNome(eq("aaa"), any(Pageable.class))).thenReturn(null);
+    @DisplayName("Deveria retornar código http 200 e uma Page vazia quando o NOME for inexistente")
+    void listarClubesCenario2_1() throws Exception {
+    String nomeInexistente = "aaa";
+        when(clubeService.findByNome(eq(nomeInexistente), any(Pageable.class))).thenReturn(null);
 
         var response = mvc.perform(get("/clube")
-                        .param("nome", "aaa")
+                        .param("nome", nomeInexistente)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        verify(clubeService).filtrarParams(eq("aaa"), eq(null), eq(null), eq(null), any(Pageable.class));
+        verify(clubeService).filtrarParams(eq(nomeInexistente), eq(null), eq(null), eq(null), any(Pageable.class));
     }
 
     @Test
-    @DisplayName("Deveria retornar código http 200 quando o parametro siglaEstado for preenchido retornando uma lista de clubes deste estado")
-    void listarClubes_3() throws Exception {
+    @DisplayName("Deveria retornar código http 200 quando o parametro SIGLAESTADO for preenchido retornando uma lista de clubes deste estado")
+    void listarClubesCenario3() throws Exception {
         var data = LocalDate.of(2002, 2, 22);
         var clube1 = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true));
         var clube2 = new Clube(new DadosClubeCadastro("Santos", "SP", "Santos", data, true));
@@ -592,15 +621,16 @@ class ClubeControllerTest {
     }
 
     @Test
-    @DisplayName("Deveria retornar codigo http 200 quando o campo siglaEstado for inexistente retornando uma page vazia")
-    void listarClubes_4() throws Exception {
+    @DisplayName("Deveria retornar codigo http 200 quando o campo SIGLAESTADO for inexistente retornando uma page vazia")
+    void listarClubesCenario3_1() throws Exception {
+        String siglaEstadoErrado = "XX";
         Page<DadosClubeDetalhadamento> paginaVazia = Page.empty();
 
-        when(clubeService.filtrarParams(eq(null), eq("XX"), eq(null), eq(null), any(Pageable.class)))
+        when(clubeService.filtrarParams(eq(null), eq(siglaEstadoErrado), eq(null), eq(null), any(Pageable.class)))
                 .thenReturn(paginaVazia);
 
         var response = mvc.perform(get("/clube")
-                        .param("siglaEstado", "XX")
+                        .param("siglaEstado", siglaEstadoErrado)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -614,39 +644,40 @@ class ClubeControllerTest {
         assertThat(contentNode.isArray()).isTrue();
         assertThat(contentNode.size()).isEqualTo(0);
 
-        verify(clubeService).filtrarParams(eq(null), eq("XX"), eq(null), eq(null), any(Pageable.class));
+        verify(clubeService).filtrarParams(eq(null), eq(siglaEstadoErrado), eq(null), eq(null), any(Pageable.class));
     }
 
     @Test
-    @DisplayName("Deveria retornar código http 200 quando o parametro siglaEstado for utilizando o metodo findBySiglaEstado")
-    void listarClubes_5() throws Exception {
-
-        when(clubeService.findBySiglaEstado(eq("aaa"), any(Pageable.class))).thenReturn(null);
+    @DisplayName("Deveria retornar código http 200 quando o parametro SIGLAESTADO for preenchido utilizando o metodo findBySiglaEstado")
+    void listarClubesCenario3_2() throws Exception {
+        String siglaEstado = "XX";
+        when(clubeService.findBySiglaEstado(eq(siglaEstado), any(Pageable.class))).thenReturn(null);
 
         var response = mvc.perform(get("/clube")
-                        .param("siglaEstado", "XX")
+                        .param("siglaEstado", siglaEstado)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        verify(clubeService).filtrarParams(eq(null), eq("XX"), eq(null), eq(null), any(Pageable.class));
+        verify(clubeService).filtrarParams(eq(null), eq(siglaEstado), eq(null), eq(null), any(Pageable.class));
     }
 
     @Test
-    @DisplayName("Deveria retornar código http 200 quando o parametro localSede for preenchido corretamente retornando uma lista de clubes deste estado")
-    void listarClubes_6() throws Exception {
+    @DisplayName("Deveria retornar código http 200 quando o parametro LOCALSEDE for preenchido corretamente retornando uma lista de clubes deste estado")
+    void listarClubesCenario4() throws Exception {
+        String localSede = "São Paulo";
         var data = LocalDate.of(2002, 2, 22);
-        var clube1 = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true));
-        var clube2 = new Clube(new DadosClubeCadastro("São Paulo", "SP", "São Paulo", data, true));
+        var clube1 = new Clube(new DadosClubeCadastro("Palmeiras", "SP", localSede, data, true));
+        var clube2 = new Clube(new DadosClubeCadastro("São Paulo", "SP", localSede, data, true));
         var listaClubes = List.of(clube1, clube2);
         Page<Clube> paginaClubes = new PageImpl<>(listaClubes);
 
-        when(clubeService.filtrarParams(eq(null), eq(null), eq("São Paulo"), eq(null), any(Pageable.class)))
+        when(clubeService.filtrarParams(eq(null), eq(null), eq(localSede), eq(null), any(Pageable.class)))
                 .thenReturn(paginaClubes);
 
         var response = mvc.perform(get("/clube")
-                        .param("localSede", "São Paulo")
+                        .param("localSede", localSede)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -674,15 +705,16 @@ class ClubeControllerTest {
     }
 
     @Test
-    @DisplayName("Deveria retornar codigo http 200 quando o campo localSede for inexistente retornando uma page vazia")
-    void listarClubes_7() throws Exception {
+    @DisplayName("Deveria retornar codigo http 200 quando o campo LOCALSEDE for inexistente retornando uma page vazia")
+    void listarClubesCenario4_1() throws Exception {
+        String localSedeErrado = "AAA";
         Page<DadosClubeDetalhadamento> paginaVazia = Page.empty();
 
-        when(clubeService.filtrarParams(eq(null), eq(null), eq("São Paulo"), eq(null), any(Pageable.class)))
+        when(clubeService.filtrarParams(eq(null), eq(null), eq(localSedeErrado), eq(null), any(Pageable.class)))
                 .thenReturn(paginaVazia);
 
         var response = mvc.perform(get("/clube")
-                        .param("localSede", "São Paulo")
+                        .param("localSede", localSedeErrado)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -696,39 +728,41 @@ class ClubeControllerTest {
         assertThat(contentNode.isArray()).isTrue();
         assertThat(contentNode.size()).isEqualTo(0);
 
-        verify(clubeService).filtrarParams(eq(null), eq(null), eq("São Paulo"), eq(null), any(Pageable.class));
+        verify(clubeService).filtrarParams(eq(null), eq(null), eq(localSedeErrado), eq(null), any(Pageable.class));
     }
 
     @Test
-    @DisplayName("Deveria retornar código http 200 quando o parametro localSede for inserido errado utilizando o metodo findByLocalSede")
-    void listarClubes_8() throws Exception {
+    @DisplayName("Deveria retornar código http 200 quando o parametro LOCALSEDE for inserido errado utilizando o metodo findByLocalSede")
+    void listarClubesCenario4_2() throws Exception {
+        String localSede = "São Paulo";
 
-        when(clubeService.findByLocalSede(eq("XX"), any(Pageable.class))).thenReturn(null);
+        when(clubeService.findByLocalSede(eq(localSede), any(Pageable.class))).thenReturn(null);
 
         var response = mvc.perform(get("/clube")
-                        .param("localSede", "XX")
+                        .param("localSede", localSede)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        verify(clubeService).filtrarParams(eq(null), eq(null), eq("XX"), eq(null), any(Pageable.class));
+        verify(clubeService).filtrarParams(eq(null), eq(null), eq(localSede), eq(null), any(Pageable.class));
     }
 
     @Test
-    @DisplayName("Deveria retornar código http 200 quando o parametro status for preenchido com false retornando uma lista de clubes pelo status")
-    void listarClubes_9() throws Exception {
+    @DisplayName("Deveria retornar código http 200 quando o parametro STATUS for preenchido com FALSE retornando uma lista de clubes pelo status")
+    void listarClubesCenario5() throws Exception {
+        String  status = "false";
         var data = LocalDate.of(2002, 2, 22);
         var clube1 = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true));
         var clube2 = new Clube(new DadosClubeCadastro("São Paulo", "SP", "São Paulo", data, true));
         var listaClubes = List.of(clube1, clube2);
         Page<Clube> paginaClubes = new PageImpl<>(listaClubes);
 
-        when(clubeService.filtrarParams(eq(null), eq(null), eq(null), eq("false"), any(Pageable.class)))
+        when(clubeService.filtrarParams(eq(null), eq(null), eq(null), eq(status), any(Pageable.class)))
                 .thenReturn(paginaClubes);
 
         var response = mvc.perform(get("/clube")
-                        .param("status", "false")
+                        .param("status", status)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -756,19 +790,20 @@ class ClubeControllerTest {
     }
 
     @Test
-    @DisplayName("Deveria retornar código http 200 quando o parametro status for preenchido com true retornando uma lista de clubes pelo status")
-    void listarClubes_10() throws Exception {
+    @DisplayName("Deveria retornar código http 200 quando o parametro STATUS for preenchido com TRUE retornando uma lista de clubes pelo status")
+    void listarClubesCenario5_1() throws Exception {
+        String status = "true";
         var data = LocalDate.of(2002, 2, 22);
         var clube1 = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true));
         var clube2 = new Clube(new DadosClubeCadastro("São Paulo", "SP", "São Paulo", data, true));
         var listaClubes = List.of(clube1, clube2);
         Page<Clube> paginaClubes = new PageImpl<>(listaClubes);
 
-        when(clubeService.filtrarParams(eq(null), eq(null), eq(null), eq("true"), any(Pageable.class)))
+        when(clubeService.filtrarParams(eq(null), eq(null), eq(null), eq(status), any(Pageable.class)))
                 .thenReturn(paginaClubes);
 
         var response = mvc.perform(get("/clube")
-                        .param("status", "true")
+                        .param("status", status)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -795,15 +830,16 @@ class ClubeControllerTest {
     }
 
     @Test
-    @DisplayName("Deveria retornar codigo http 200 quando o campo status for inexistente retornando uma page vazia")
-    void listarClubes11() throws Exception {
+    @DisplayName("Deveria retornar codigo http 200 quando o campo STATUS for inexistente retornando uma page VAZIA")
+    void listarClubesCenario5_2() throws Exception {
+        String statusInexistente = "XXXX";
         Page<DadosClubeDetalhadamento> paginaVazia = Page.empty();
 
-        when(clubeService.filtrarParams(eq(null), eq(null), eq(null), eq("XXXX"), any(Pageable.class)))
+        when(clubeService.filtrarParams(eq(null), eq(null), eq(null), eq(statusInexistente), any(Pageable.class)))
                 .thenReturn(paginaVazia);
 
         var response = mvc.perform(get("/clube")
-                        .param("status", "XXXX")
+                        .param("status", statusInexistente)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
@@ -821,25 +857,24 @@ class ClubeControllerTest {
     }
 
     @Test
-    @DisplayName("Deveria retornar código http 200 quando o parametro status for inserido errado utilizando o metodo findByStatus")
-    void listarClubes_12() throws Exception {
-
-        when(clubeService.findByStatus(eq("XX"), any(Pageable.class))).thenReturn(null);
+    @DisplayName("Deveria retornar código http 200 quando o parametro STATUS for inserido ERRADO utilizando o metodo findByStatus")
+    void listarClubesCenario5_3() throws Exception {
+        String statusInexistente = "XXXX";
+        when(clubeService.findByStatus(eq(statusInexistente), any(Pageable.class))).thenReturn(null);
 
         var response = mvc.perform(get("/clube")
-                        .param("status", "XXXX")
+                        .param("status", statusInexistente)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        verify(clubeService).filtrarParams(eq(null), eq(null), eq(null), eq("XXXX"), any(Pageable.class));
+        verify(clubeService).filtrarParams(eq(null), eq(null), eq(null), eq(statusInexistente), any(Pageable.class));
     }
-
 
     @Test
     @DisplayName("Deveria retornar codigo http 200 quando o id do clube for localizado")
-    void restropctoGeral_1() throws Exception {
+    void restropctoGeralCenario1() throws Exception {
         Long id = 1L;
         LocalDate data = LocalDate.of(2002, 2, 22);
         Clube clube = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true));
@@ -855,7 +890,7 @@ class ClubeControllerTest {
 
     @Test
     @DisplayName("Deveria retornar codigo http 404 quando o id do clube for localizado")
-    void restropctoGeral_2() throws Exception {
+    void restropctoGeralCenario1_1() throws Exception {
         Long id = 0L;
         when(clubeService.validarId(id)).thenThrow(new EntityNotFoundException()); // Mocking service to return null
 
@@ -868,7 +903,7 @@ class ClubeControllerTest {
 
     @Test
     @DisplayName("Deveria retornar codigo http 200 quando passado o id de um clube para gerar a sua retrospectiva")
-    void restropctoGeral_3() throws Exception {
+    void restropctoGeralCenario1_2() throws Exception {
         Long id = 1L;
         LocalDate data = LocalDate.of(2002, 2, 22);
         Clube clube = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true));
@@ -897,7 +932,5 @@ class ClubeControllerTest {
 
         assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
     }
-
-
 
 }

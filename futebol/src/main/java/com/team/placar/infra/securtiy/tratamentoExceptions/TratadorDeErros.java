@@ -3,6 +3,7 @@ package com.team.placar.infra.securtiy.tratamentoExceptions;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NonUniqueResultException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -16,7 +17,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class TratadorDeErros {
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity tratarErro404(){return  ResponseEntity.notFound().build();}
+    public ResponseEntity tratarErro404(EntityNotFoundException ex){
+        return  ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(ex.getMessage());}
 
     @ExceptionHandler(ValidacaoException.class)
     public ResponseEntity tratarErroRegraDeNegocio(ValidacaoException ex){
@@ -43,6 +45,7 @@ public class TratadorDeErros {
         String menssage = "Mensagem: Verifique se o dado inserido é de fato um número ou uma letra ---";
         return ResponseEntity.badRequest().body( menssage + ex.getMessage());
     }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity tratarErro400(MethodArgumentNotValidException ex){
