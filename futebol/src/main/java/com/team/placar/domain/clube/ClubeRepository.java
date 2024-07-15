@@ -38,9 +38,6 @@ public interface ClubeRepository  extends JpaRepository<Clube, Long> {
         @Query("SELECT COUNT(p) > 0 FROM partida p " +
                 "WHERE (p.clubeMandante.id = :clubeId OR p.clubeVisitante.id = :clubeId) " +
                 "AND p.dataHora < :dataCriacao")
-        boolean existsPartidasByClubeIdAndDataBefore(@Param("clubeId") Long clubeId, @Param("dataCriacao") LocalDateTime dataCriacao);
-
-
-
+        boolean existsPartidasByClubeIdAndDataBefore( Long clubeId,  LocalDateTime dataCriacao);
 
 }

@@ -75,9 +75,9 @@ public class ClubeService {
 
     public void checarDataCriacaoPorPartida(Long id, DadosClubeCadastro dados ){
         LocalDateTime dataCriacaoInicioDoDia = dados.dataCriacao().atStartOfDay();
-        var existe = repository.existsPartidasByClubeIdAndDataBefore(id, dataCriacaoInicioDoDia);
-        if (existe) {
-            throw new ConflitException("Não é possível cadastrar uma data após a data de uma partida do clube");
+//        var existe = ;
+        if (repository.existsPartidasByClubeIdAndDataBefore(id, dataCriacaoInicioDoDia)) {
+            throw new ConflitException("Não é possível cadastrar uma data depois da data de uma partida do clube");
         }
     }
 

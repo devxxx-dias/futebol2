@@ -1,16 +1,11 @@
 package com.team.placar.domain.clube;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.team.placar.domain.estadio.Estadio;
 import com.team.placar.domain.estadio.EstadioRepository;
 import com.team.placar.domain.partida.DadosCadastroPartida;
 import com.team.placar.domain.partida.Partida;
 import com.team.placar.domain.partida.PartidaRepository;
 import com.team.placar.domain.partida.Resultado;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -80,32 +74,25 @@ class ClubeRepositoryTest {
     }
 
     @Test
-    @DisplayName("Deveria retornar FALSE quando é passada uma data de criacao futura após a data de uma partida")
+    @DisplayName("Deveria retornar TRUE quando é passada uma data de criação posterio a alguma data da partida")
     void checarDataCriacaoComDataPartida1() {
         Long clubeId = clube1.getId();
-        LocalDateTime data = LocalDateTime.now().plusYears(1L);
-        var existeData = clubeRepository.existsPartidasByClubeIdAndDataBefore(clubeId, data);
-        assertThat(existeData).isFalse();
-    }
-
-    @Test
-    @DisplayName("Deveria retornar TRUE quando é passada uma data de criação anterior a alguma data da partida")
-    void checarDataCriacaoComDataPartida_1() {
-        Long clubeId = clube1.getId();
-        LocalDateTime data = dataCriacao.atStartOfDay().minusMonths(10L);
-        var existeData = clubeRepository.existsPartidasByClubeIdAndDataBefore(clubeId, data);
+        LocalDateTime now = LocalDateTime.now();
+        var existeData = clubeRepository.existsPartidasByClubeIdAndDataBefore(clubeId, now);
         assertThat(existeData).isTrue();
     }
 
+    @Test
+    @DisplayName("Deveria retornar FALSE quando é passada uma data de criação anterior a alguma data da partida")
+    void checarDataCriacaoComDataPartida1_1() {
+        Long clubeId = clube1.getId();
+        LocalDateTime now = LocalDateTime.now().minusYears(1L);
+        var existeData = clubeRepository.existsPartidasByClubeIdAndDataBefore(clubeId, now);
+        assertThat(existeData).isFalse();
+    }
 
 
-
-
-
-
-
-    private DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("dd-MM-yyyy'T'HH:mm");
-    private LocalDateTime dataCriacaoTime = LocalDateTime.parse("02-02-2022T12:22", formatterTime);
+    private LocalDateTime dataCriacaoTime = LocalDateTime.now().minusMinutes(5L);
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     private LocalDate dataCriacao = LocalDate.parse("02-02-2022", formatter);
     private Clube clube1 = new Clube(clubeCadastro("Palmeiras", "SP", "São Paulo", true));
@@ -114,15 +101,21 @@ class ClubeRepositoryTest {
     private Clube clube4 = new Clube(clubeCadastro("Botafogo", "RJ", "Rio de Janeiro", true));
     private Estadio estadio = new Estadio(null, "Pacaembu", "São Paulo", "SP");
     private Estadio estadio2 = new Estadio(null, "Maracanã", "Rio de Janeiro", "RJ");
+    private Partida partida = new Partida(null,clube1, clube2, estadio,10, 5,Resultado.VITORIA,Resultado.DERROTA, dataCriacaoTime);
+    private Partida partida2 = new Partida(null,clube1, clube2, estadio,10, 5,Resultado.VITORIA,Resultado.DERROTA, dataCriacaoTime);
+
 
     @BeforeEach
     public void setUp() {
-      var clubeA = clube1;
-      var clubeB = clube2;
-      var clubeC = clube3;
-      var clubeD = clube4;
+
+        em.persist(clube1);
+        em.persist(clube2);
+        em.persist(clube3);
+        em.persist(clube4);
         em.persist(estadio);
         em.persist(estadio2);
+        em.persist(partida);
+        em.persist(partida2);
     }
 
     private Clube cadastrarClube(String nome, String siglaEstado, String localSede, Boolean status) {

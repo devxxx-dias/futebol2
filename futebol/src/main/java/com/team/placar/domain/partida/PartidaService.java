@@ -60,6 +60,8 @@ public class PartidaService {
         return repository.findPartidaByEstadioId(estadioId, paginacao);
     }
 
+
+
     public Page filtrarParams(String clubeNome, String estadioNome, Pageable paginacao) {
         var page = repository.findAll(paginacao).map(DadosDetalhadamentoPartida::new);
 
