@@ -14,6 +14,9 @@ public class BrazilStateValidator implements ConstraintValidator<ValidBrazilStat
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (value.isEmpty()) {
+            return true;
+        }
         return value != null && VALID_STATES.contains(value.toUpperCase());
     }
 }

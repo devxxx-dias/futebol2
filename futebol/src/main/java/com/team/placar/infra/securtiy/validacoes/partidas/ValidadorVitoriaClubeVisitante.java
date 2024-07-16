@@ -3,7 +3,9 @@ package com.team.placar.infra.securtiy.validacoes.partidas;
 import com.team.placar.domain.partida.DadosCadastroPartida;
 import com.team.placar.domain.partida.Resultado;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ValidadorVitoriaClubeVisitante implements ValidadorPartida {
     @Override
     public void validar(DadosCadastroPartida dados) {

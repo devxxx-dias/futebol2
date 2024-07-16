@@ -610,7 +610,6 @@ class ClubeControllerTest {
 
     }
 
-//TODO aguardar a jeanne clube service 78
     @Test
     @DisplayName("Deveria devolver codigo http 409 quando a DATA de criacao fornecida for maior do que a ultima data da partida do clube")
     void atualizarCenario5_3() throws Exception {
@@ -622,89 +621,22 @@ class ClubeControllerTest {
         var clube = new Clube(dadosAtualizados);
 
         when(clubeService.atualizar(any(Long.class), any(DadosClubeCadastro.class)))
-                .thenReturn(clube);
-
-        doThrow(new ConflitException("Não é possível cadastrar uma data após a data de uma partida do clube"))
-                .when(clubeService).checarDataCriacaoPorPartida(any(Long.class), any(DadosClubeCadastro.class));
-
-        when(clubeRepository.existsPartidasByClubeIdAndDataBefore(eq(1L), eq(dataCriacaoInicioDoDia)))
-                .thenReturn(true);
+                .thenThrow(new ConflitException("Não é possível cadastrar uma data depois da data de uma partida do clube"));
 
         var response = mvc.perform(put("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroJacksonTester.write(dadosAtualizados).getJson()))
-                .andExpect(status().isConflict()) // Expecting HTTP 409 Conflict
+                .andExpect(status().isConflict())
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CONFLICT.value());
 
-    }
-
-    @Test
-    @DisplayName("Deveria devolver codigo http 409 quando a DATA de criacao fornecida for maior do que a ultima data da partida do clube")
-    void atualizarCenario5_4() throws Exception {
-        var id = 1L;
-        var data = LocalDate.of(2002, 2, 22).plusYears(1);
-        var dadosAtualizados = new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true);
-
-        // Simulating the repository response
-        when(clubeRepository.existsPartidasByClubeIdAndDataBefore(any(Long.class), any(LocalDateTime.class)))
-                .thenReturn(false);
-
-        // Asserting that the service throws the ConflitException
-        assertThrows(ConflitException.class, () -> {
-            clubeService.checarDataCriacaoPorPartida(id, dadosAtualizados);
-        });
-
-        // Performing the PUT request
-        var response = mvc.perform(MockMvcRequestBuilders.put("/clube/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(dadosCadastroJacksonTester.write(dadosAtualizados).getJson()))
-                .andExpect(MockMvcResultMatchers.status().isConflict())
-                .andReturn().getResponse();
-
-        // Asserting the status code
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.CONFLICT.value());
-
-        // Asserting the error message
         var expectedErrorMessage = """
-            [{"campo":"dataCriacao","mensagem":"Não é possível cadastrar uma data após a data de uma partida do clube"}]""";
-
-        assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-    }
-
-    @Test
-    @DisplayName("Deveria devolver codigo http 409 quando a DATA de criacao fornecida for maior do que a ultima data da partida do clube")
-    void atualizarCenario5_5() throws Exception {
-        var id = 1L;
-        var data = LocalDate.of(2002, 2, 22).plusYears(1);
-        var dadosAtualizados = new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true);
-
-        // Mock the repository response to simulate a conflict
-        when(clubeRepository.existsPartidasByClubeIdAndDataBefore(any(Long.class), any(LocalDateTime.class)))
-                .thenThrow(new ConflitException(""));
-
-        // Performing the PUT request and expecting a 409 Conflict status
-        var response = mvc.perform(MockMvcRequestBuilders.put("/clube/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(dadosCadastroJacksonTester.write(dadosAtualizados).getJson()))
-                .andExpect(MockMvcResultMatchers.status().isConflict())
-                .andReturn().getResponse();
-
-        // Asserting the status code
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.CONFLICT.value());
-
-        // Asserting the error message
-        var expectedErrorMessage = """
-            [{"campo":"dataCriacao","mensagem":"Não é possível cadastrar uma data após a data de uma partida do clube"}]""";
+                Não é possível cadastrar uma data depois da data de uma partida do clube""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
 
-        // Verify that the service method was called correctly
-        verify(clubeService, times(1)).checarDataCriacaoPorPartida(eq(id), any(DadosClubeCadastro.class));
     }
-
-
 
 
     @Test

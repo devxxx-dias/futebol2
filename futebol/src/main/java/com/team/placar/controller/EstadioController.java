@@ -40,7 +40,7 @@ public class EstadioController {
     @PutMapping("{id}")
     @Transactional
     public ResponseEntity atualizar(
-            @RequestBody @Valid DadosAtualizacaoEstadio dados,
+            @RequestBody @Valid DadosCadastroEstadio dados,
             @PathVariable Long id){
         System.out.println(id);
         var estadio = service.atualizar(dados, id);

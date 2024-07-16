@@ -22,7 +22,7 @@ public class Estadio {
         this(null,dados.nome(),dados.cidade(),dados.siglaEstado());
     }
 
-    public void atualizarInformacoes(DadosAtualizacaoEstadio dados) {
+    public void atualizarInformacoes(DadosCadastroEstadio dados) {
         if(dados.nome() != null){
             this.nome = dados.nome();
         }

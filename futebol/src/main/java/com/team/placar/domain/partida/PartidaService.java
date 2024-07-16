@@ -2,11 +2,14 @@ package com.team.placar.domain.partida;
 
 import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
 import com.team.placar.infra.securtiy.validacoes.partidas.ValidadorPartida;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -21,11 +24,11 @@ public class PartidaService {
         validadores.forEach(d -> d.validar(dados));
 
         var clubeMandante = repository.findByNome(dados.nomeClubeMandante())
-                .orElseThrow(() -> new ValidacaoException("Clube Mandante não encontrado pelo nome ou não está ativo"));
+                .orElseThrow(() -> new EntityNotFoundException("Clube Mandante não encontrado pelo nome ou não está ativo"));
         var clubeVisitante = repository.findByNome(dados.nomeClubeVisitante())
-                .orElseThrow(() -> new ValidacaoException("Clube Visitante não encontrado pelo nome ou não está ativo"));
+                .orElseThrow(() -> new EntityNotFoundException("Clube Visitante não encontrado pelo nome ou não está ativo"));
         var estadio = repository.findEstadioByNome(dados.nomeEstadio())
-                .orElseThrow(() -> new ValidacaoException("Estádio não encontrado pelo nome fornecido"));
+                .orElseThrow(() -> new EntityNotFoundException("Estádio não encontrado pelo nome fornecido"));
 
         var partida = new Partida(
                 clubeMandante,
@@ -41,7 +44,7 @@ public class PartidaService {
     }
 
     public Partida validarId(Long id) {
-        var partida = repository.findById(id).orElseThrow(() -> new ValidacaoException("Partida não encontrada pelo ID"));
+        var partida = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Partida não encontrada pelo ID"));
         return partida;
     }
 
@@ -61,15 +64,19 @@ public class PartidaService {
     }
 
 
-
     public Page filtrarParams(String clubeNome, String estadioNome, Pageable paginacao) {
         var page = repository.findAll(paginacao).map(DadosDetalhadamentoPartida::new);
 
+
         if (clubeNome != null && !clubeNome.isEmpty()) {
-            var clube = repository.findByNome(clubeNome)
-                    .orElseThrow(() -> new ValidacaoException("Clube não encontrado pelo nome fornecido"));
-            var partida = encontrarClubeId(clube.getId(), paginacao);
-            return partida.map(DadosDetalhadamentoPartida::new);
+            var clube = repository.findClube(clubeNome);
+            if( clube != null){
+                var partida = encontrarClubeId(clube.getId(), paginacao);
+                return partida.map(DadosDetalhadamentoPartida::new);
+            }
+            else {
+                return new PageImpl<>(Collections.emptyList(), paginacao, 0);
+            }
         }
 
         if (estadioNome != null && !estadioNome.isEmpty()) {
@@ -77,6 +84,7 @@ public class PartidaService {
             var partida = encontrarEstadioId(estadio.get().getId(), paginacao);
             return partida.map(DadosDetalhadamentoPartida::new);
         }
+
 
         return page;
     }
