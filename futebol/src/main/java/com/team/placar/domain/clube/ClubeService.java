@@ -66,8 +66,6 @@ public class ClubeService {
         }
     }
 
-
-
     public Clube validarId(Long id) {
         var clube = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Partida não encontrada pelo ID"));
         return clube;

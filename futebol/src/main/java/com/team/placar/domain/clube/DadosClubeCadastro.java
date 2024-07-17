@@ -1,10 +1,9 @@
 package com.team.placar.domain.clube;
 
-import com.team.placar.infra.securtiy.validarSigla.ValidBrazilState;
+import com.team.placar.infra.securtiy.anotacoes.validarSigla.ValidBrazilState;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public record DadosClubeCadastro(
         @NotBlank(message = "O nome do clube precisa ser inserido")

@@ -1,11 +1,11 @@
 package com.team.placar.domain.estadio;
 
-import com.team.placar.domain.clube.DadosClubeCadastro;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ConflitException;
-import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
 import com.team.placar.infra.securtiy.validacoes.estadios.ValidadorEstadio;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +26,7 @@ public class EstadioService {
     }
 
     public Estadio atualizar(DadosCadastroEstadio dados, Long id) {
+        validadores.forEach(v -> v.validar(dados));
         var estadio = buscarId(id);
         validarNomeEstadoPeloId(id, dados);
         estadio.atualizarInformacoes(dados);
@@ -44,4 +45,7 @@ public class EstadioService {
         }
     }
 
+    public Page<DadosDetalhadamentoEstadio> listarEstadios(Pageable paginacao) {
+   return repository.findAll(paginacao).map(DadosDetalhadamentoEstadio::new);
+    }
 }

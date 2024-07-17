@@ -1,4 +1,4 @@
-package com.team.placar.infra.securtiy.validarSigla;
+package com.team.placar.infra.securtiy.anotacoes.validarSigla;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

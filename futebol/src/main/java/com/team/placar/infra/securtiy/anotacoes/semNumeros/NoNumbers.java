@@ -1,4 +1,6 @@
-package com.team.placar.infra.securtiy.validarSigla;
+package com.team.placar.infra.securtiy.anotacoes.semNumeros;
+
+import jakarta.validation.Constraint;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -8,12 +10,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Documented
-@Constraint(validatedBy = BrazilStateValidator.class)
-@Target({ ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.PARAMETER })
+@Constraint(validatedBy = NoNumbersValidator.class)
+@Target({ ElementType.FIELD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidBrazilState {
-    String message() default "SiglaEstado deve ser um estado válido do Brasil";
+public @interface NoNumbers {
+    String message() default "Verifique se há números em algum nome";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

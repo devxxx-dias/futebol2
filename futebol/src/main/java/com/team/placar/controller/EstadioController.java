@@ -21,9 +21,6 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 public class EstadioController {
 
     @Autowired
-    private EstadioRepository repository;
-
-    @Autowired
     private EstadioService service;
 
 
@@ -49,7 +46,7 @@ public class EstadioController {
 
     @GetMapping("{id}")
     public ResponseEntity buscar(@PathVariable Long id){
-        var estadio = service.buscar(id);
+        var estadio = service.buscarId(id);
         return ResponseEntity.ok().body(new DadosDetalhadamentoEstadio(estadio));
     }
 
@@ -57,10 +54,9 @@ public class EstadioController {
     public ResponseEntity<Page<DadosDetalhadamentoEstadio>> listarEstadios(
             @PageableDefault(size = 10, sort = {"nome"})
             Pageable paginacao){
-        var page = repository.findAll(paginacao).map(DadosDetalhadamentoEstadio::new);
+        var page =  service.listarEstadios(paginacao);
         return ResponseEntity.ok(page);
     }
-
 
 
 }
