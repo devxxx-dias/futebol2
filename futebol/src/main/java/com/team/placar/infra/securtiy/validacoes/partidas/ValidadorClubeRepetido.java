@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class ValidadorClubeRepetido implements ValidadorPartida {
     @Override
     public void validar(DadosCadastroPartida dados) {
-        if (dados.nomeClubeMandante() == dados.nomeClubeVisitante()) {
+        if (dados.nomeClubeMandante().equals(dados.nomeClubeVisitante())) {
             throw new ValidacaoException("Você não pode cadastrar  um único clube para partida");
         }
     }

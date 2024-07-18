@@ -23,9 +23,9 @@ public record DadosCadastroPartida(
         @NotNull(message = "A quantidade de gols do clube visitante deve ser informado")
         @Min(value = 0, message = "A quantidade de gols do clube visitante não pode ser negativa")
         Integer qtdeGolsClubeVisitante,
-        @NotNull(message = "Defina o resultado final do Clube Mandante - VITORIA, DERROTA OU EMPATE ")
+        @NotNull(message = "Defina o resultado final do Clube Mandante - VITORIA, DERROTA OU EMPATE")
         Resultado resultadoClubeMandante,
-        @NotNull(message = "Defina o resultado final do Clube Visitante - VITORIA, DERROTA OU EMPATE ")
+        @NotNull(message = "Defina o resultado final do Clube Visitante - VITORIA, DERROTA OU EMPATE")
         Resultado resultadoClubeVisitante,
         @NotNull(message = "Infome a data e a hora da partida, formato YYYY-MM-DDTHH:MM")
         @PastOrPresent(message = "Não é possível salvar uma partida em uma data futura")

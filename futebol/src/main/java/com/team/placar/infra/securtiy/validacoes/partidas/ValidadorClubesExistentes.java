@@ -11,7 +11,6 @@ public class ValidadorClubesExistentes implements ValidadorPartida {
     @Autowired
     private PartidaRepository partidaRepository;
 
-
     @Override
     public void validar(DadosCadastroPartida dados) {
         var clubeMandante = partidaRepository.findByNome(dados.nomeClubeMandante())
