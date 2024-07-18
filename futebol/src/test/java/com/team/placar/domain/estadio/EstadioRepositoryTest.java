@@ -1,7 +1,8 @@
-package com.team.placar.domain.clube;
+package com.team.placar.domain.estadio;
 
-import com.team.placar.domain.estadio.Estadio;
-import com.team.placar.domain.estadio.EstadioRepository;
+import com.team.placar.domain.clube.Clube;
+import com.team.placar.domain.clube.ClubeRepository;
+import com.team.placar.domain.clube.DadosClubeCadastro;
 import com.team.placar.domain.partida.DadosCadastroPartida;
 import com.team.placar.domain.partida.Partida;
 import com.team.placar.domain.partida.PartidaRepository;
@@ -13,20 +14,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
-class ClubeRepositoryTest {
+class EstadioRepositoryTest {
+
 
     @Autowired
     private ClubeRepository clubeRepository;
@@ -50,8 +52,8 @@ class ClubeRepositoryTest {
     private Clube clube4 = new Clube(clubeCadastro("Botafogo", "RJ", "Rio de Janeiro", true));
     private Estadio estadio = new Estadio(null, "Pacaembu", "São Paulo", "SP");
     private Estadio estadio2 = new Estadio(null, "Maracanã", "Rio de Janeiro", "RJ");
-    private Partida partida = new Partida(null,clube1, clube2, estadio,10, 5,Resultado.VITORIA,Resultado.DERROTA, dataCriacaoTime);
-    private Partida partida2 = new Partida(null,clube1, clube2, estadio,10, 5,Resultado.VITORIA,Resultado.DERROTA, dataCriacaoTime);
+    private Partida partida = new Partida(null, clube1, clube2, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
+    private Partida partida2 = new Partida(null, clube1, clube2, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
 
 
     private Clube cadastrarClube(String nome, String siglaEstado, String localSede, Boolean status) {
@@ -126,57 +128,47 @@ class ClubeRepositoryTest {
         em.flush();
     }
 
-    @Test
-    @DisplayName("Deveria retornar null quando o id não for encontrado ou quando o perfil estiver inativo")
-    void findByIdAndStatusCenario1() {
-        var clubeInativo = clubeRepository.findByIdAndStatus(-1L);
-        assertThat(clubeInativo).isEmpty();
 
+    @Test
+    @DisplayName("Deveria retornar nulo quando o nome não for encontrado ou quando o perfil estiver inativo")
+    void findByNomeIgnoreCaseCenario1() {
+        String nome = "XXX";
+        Estadio estadioEncontrado = estadioRepository.findByNomeIgnoreCase(nome);
+        assertThat(estadioEncontrado).isNull();
     }
 
     @Test
-    @DisplayName("Deveria retornar um clube quando o id for encontrado e o perfil estiver ativo")
-    void findByIdAndStatusCenario2() {
-        var clubeativo = cadastrarClube("Palmeiras", "SP", "São Paulo", true);
-        var clube = clubeRepository.findByIdAndStatus(clubeativo.getId());
-        assertThat(clube).isPresent().hasValue(clubeativo);
+    @DisplayName("Deveria retornar true quando o nome for encontrado e o perfil estiver ativo")
+    void findByNomeIgnoreCaseCenario2() {
+        String nome = estadio.getNome();
+        Estadio estadioEncontrado = estadioRepository.findByNomeIgnoreCase(nome);
+        assertThat(estadioEncontrado).isEqualTo(estadio);
     }
 
     @Test
-    @DisplayName("Deveria retornar uma lista vazia quando o id do clube não constar em alguma partida para o retorspecto")
-    void findRestrospectoCenario1() {
-        var retrospecto = clubeRepository.findRestrospecto(-1L);
-        assertThat(retrospecto).isEmpty();
+    @DisplayName("Deveria retornar false quando o nome for encontrado mas  pertencer ao  outro clube do id indicado")
+    void existsClubeByIdIsNotAndNome() {
+        Long idClube = clube1.getId();
+        String nomeOutroClube = clube2.getNome();
+        var checarNomeDiferenteId = estadioRepository.existsClubeByIdIsNotAndNome(idClube, nomeOutroClube);
+        assertThat(checarNomeDiferenteId).isFalse();
     }
 
     @Test
-    @DisplayName("Deveria retornar uma lista de retrospecto com o id do clube sendo clube mandante e visitante de todas as partidas")
-    void findRestrospectoCenario2() {
-        Long clubeId = clube1.getId();
-        List<Partida> retrospecto = clubeRepository.findRestrospecto(clubeId);
+    @DisplayName("Deveria retornar true quando o nome for encontrado pertencer ao outro clube diferente do id indicado")
+    void existsClubeByIdIsNotAndNome2() {
+        // Arrange
+        Estadio estadio2 = new Estadio(null, "Maracanã", "Rio de Janeiro", "RJ");
+        em.persist(estadio2);
+        Estadio estadio3 = new Estadio(null, "Maracanã", "São Paulo", "SP");
+        em.persist(estadio3);
+        em.flush(); // Ensure both entities are persisted to the database
 
-        assertThat(retrospecto).extracting("clubeMandante")
-                .allMatch(clube -> ((Clube) clube).getId().equals(clubeId) || ((Partida) clube).getClubeVisitante().getId().equals(clubeId));
+        // Act
+        boolean checarNomeDiferenteId = estadioRepository.existsClubeByIdIsNotAndNome(estadio3.getId(), estadio2.getNome());
+
+        // Assert
+        assertThat(checarNomeDiferenteId).isTrue();
     }
-
-    @Test
-    @DisplayName("Deveria retornar TRUE quando é passada uma data de criação posterio a alguma data da partida")
-    void checarDataCriacaoComDataPartida1() {
-        Long clubeId = clube1.getId();
-        LocalDateTime now = LocalDateTime.now();
-        var existeData = clubeRepository.existsPartidasByClubeIdAndDataBefore(clubeId, now);
-        assertThat(existeData).isTrue();
-    }
-
-    @Test
-    @DisplayName("Deveria retornar FALSE quando é passada uma data de criação anterior a alguma data da partida")
-    void checarDataCriacaoComDataPartida1_1() {
-        Long clubeId = clube1.getId();
-        LocalDateTime now = LocalDateTime.now().minusYears(1L);
-        var existeData = clubeRepository.existsPartidasByClubeIdAndDataBefore(clubeId, now);
-        assertThat(existeData).isFalse();
-    }
-
-
 
 }

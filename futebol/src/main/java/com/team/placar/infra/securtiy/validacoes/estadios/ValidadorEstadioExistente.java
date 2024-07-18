@@ -16,7 +16,7 @@ public class ValidadorEstadioExistente implements ValidadorEstadio {
 
         var estadioExiste = repository.findByNomeIgnoreCase(dados.nome());
 
-        if(estadioExiste){
+        if(estadioExiste != null){
             throw new ConflitException("Já existe um estadio cadastrado com este nome");
         }
 
