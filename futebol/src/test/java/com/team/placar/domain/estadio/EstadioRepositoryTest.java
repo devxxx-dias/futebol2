@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
@@ -22,7 +21,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -157,17 +155,16 @@ class EstadioRepositoryTest {
     @Test
     @DisplayName("Deveria retornar true quando o nome for encontrado pertencer ao outro clube diferente do id indicado")
     void existsClubeByIdIsNotAndNome2() {
-        // Arrange
         Estadio estadio2 = new Estadio(null, "Maracanã", "Rio de Janeiro", "RJ");
         em.persist(estadio2);
         Estadio estadio3 = new Estadio(null, "Maracanã", "São Paulo", "SP");
         em.persist(estadio3);
         em.flush(); // Ensure both entities are persisted to the database
 
-        // Act
+
         boolean checarNomeDiferenteId = estadioRepository.existsClubeByIdIsNotAndNome(estadio3.getId(), estadio2.getNome());
 
-        // Assert
+
         assertThat(checarNomeDiferenteId).isTrue();
     }
 

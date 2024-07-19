@@ -15,13 +15,13 @@ import java.util.Optional;
 
 public interface ClubeRepository  extends JpaRepository<Clube, Long> {
     @Query("SELECT c FROM Clube c WHERE c.id = :id AND c.status = true")
-    Optional<Clube> findByIdAndStatus(@Param("id") Long id);
+    Optional<Clube> findByIdAndStatus( Long id);
 
     @Query("SELECT p FROM partida p WHERE p.clubeMandante.id = :id OR p.clubeVisitante.id = :id")
-    List<Partida> findRestrospecto(@Param("id") Long id);
+    List<Partida> findRestrospecto( Long id);
 
     @Query("SELECT p FROM partida p WHERE p.clubeMandante.id = :id OR p.clubeVisitante.id = :id")
-    Page<Partida> findRestrospectoPaginado(@Param("id") Long id, Pageable pageable);
+    Page<Partida> findRestrospectoPaginado(Long id, Pageable pageable);
 
     Page<Clube> findByNomeContaining(String nome, Pageable pageable);
 
