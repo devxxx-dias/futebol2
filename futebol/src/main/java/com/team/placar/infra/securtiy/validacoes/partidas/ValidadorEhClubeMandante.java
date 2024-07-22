@@ -19,9 +19,15 @@ public class ValidadorEhClubeMandante implements ValidadorPartida {
         var estadio = repository.findEstadioByNome(dados.nomeEstadio())
                 .orElseThrow(() -> new ValidacaoException("Estádio não encontrado pelo nome fornecido"));
 
+        if(estadio.getCidade().isEmpty()){
+            return;
+
+        }
+
         if (!clubeMandante.getLocalSede().equals(estadio.getCidade())) {
             throw new ValidacaoException("Verifique se o estádio é do clube da casa (mandante)");
         }
+
     }
 
 }

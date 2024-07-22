@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface PartidaRepository extends JpaRepository<Partida, Long> {
@@ -46,5 +47,16 @@ public interface PartidaRepository extends JpaRepository<Partida, Long> {
 
 
     boolean existsPartidaByEstadio_IdAndDataHoraBetween(Long estadioId, LocalDateTime dataHoraInicio, LocalDateTime dataHoraFim);
+
+
+        @Query("""
+        SELECT p 
+        FROM partida p
+        WHERE (p.clubeMandante.id = :idClube AND p.clubeVisitante.id = :idClubeAdversario)
+           OR (p.clubeMandante.id = :idClubeAdversario AND p.clubeVisitante.id = :idClube)
+       """)
+        List<Partida> findRestrospecto2(Long idClube, Long idClubeAdversario);
+
+
 
 }

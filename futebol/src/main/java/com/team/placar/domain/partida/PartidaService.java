@@ -1,5 +1,9 @@
 package com.team.placar.domain.partida;
 
+import com.team.placar.domain.clube.ClubeRepository;
+import com.team.placar.domain.clube.ClubeService;
+import com.team.placar.domain.clube.DadosRestropctoClubeDetalhadamento;
+import com.team.placar.infra.securtiy.tratamentoExceptions.ConflitException;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
 import com.team.placar.infra.securtiy.validacoes.partidas.ValidadorPartida;
 import jakarta.persistence.EntityNotFoundException;
@@ -10,12 +14,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PartidaService {
     @Autowired
     private PartidaRepository repository;
+
+    @Autowired
+    private ClubeService clubeService;
+
+    @Autowired
+    private ClubeRepository clubeRepository;
 
     @Autowired
     private List<ValidadorPartida> validadores;
@@ -24,11 +36,11 @@ public class PartidaService {
         validadores.forEach(d -> d.validar(dados));
 
         var clubeMandante = repository.findByNome(dados.nomeClubeMandante())
-                .orElseThrow(() -> new EntityNotFoundException("Clube Mandante não encontrado pelo nome ou não está ativo"));
+                .orElseThrow(() -> new ConflitException("Clube mandante não localizado pelo nome: " + dados.nomeClubeMandante()));
         var clubeVisitante = repository.findByNome(dados.nomeClubeVisitante())
-                .orElseThrow(() -> new EntityNotFoundException("Clube Visitante não encontrado pelo nome ou não está ativo"));
+                .orElseThrow(() -> new ConflitException("Clube visitante não localizado pelo nome: " + dados.nomeClubeVisitante()));
         var estadio = repository.findEstadioByNome(dados.nomeEstadio())
-                .orElseThrow(() -> new EntityNotFoundException("Estádio não encontrado pelo nome fornecido"));
+                .orElseThrow(() -> new ConflitException("Estadio não localizado pelo nome: " + dados.nomeEstadio()));
 
         var partida = new Partida(
                 clubeMandante,
@@ -88,4 +100,23 @@ public class PartidaService {
 
         return page;
     }
+
+
+   public Map listarPartidasRetro(Long idClube, Long idClubeAdversario) {
+        clubeService.buscar(idClube);
+        clubeService.buscar(idClubeAdversario);
+
+       List<Partida> retrospectiva = repository.findRestrospecto2(idClube, idClubeAdversario);
+       var restrospectoClube = clubeService.efeituarRestrospectivaAdversario(idClube, idClubeAdversario);
+       var restrospectoClubeAdversario = clubeService.efeituarRestrospectivaAdversario(idClubeAdversario, idClube);
+
+
+       Map<String, Object> response = new HashMap<>();
+       response.put("ListaPartida", retrospectiva.stream().map(DadosDetalhadamentoPartida::new));
+       response.put("RetrospectoClube", restrospectoClube);
+       response.put("RetrospectoAdversario", restrospectoClubeAdversario);
+
+        return response;
+    }
+
 }

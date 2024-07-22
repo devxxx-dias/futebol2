@@ -75,26 +75,15 @@ public class ClubeController {
 
     @GetMapping("/geral/{id}")
     public ResponseEntity restropctoGeral(@PathVariable Long id) {
-        clubeService.validarId(id);
         var retrospectiva = clubeService.efeituarRestropctiva(id);
-
         return ResponseEntity.ok(retrospectiva);
     }
-//    @GetMapping("/geral/adversarios")
-//    public ResponseEntity<Page<DadosDetalhadamentoPartida>> listarClubes(@RequestParam("idClube1") Long idClube1, @RequestParam("idClube1") Long idClube1, Pageable paginacao) {
-//        clubeService.validarId();
-//        var page = clubeService.listarRestrospectivaId(idClube1, idClube2, paginacao).map(DadosDetalhadamentoPartida::new);
-//        return ResponseEntity.ok(page);
-//    }
 
-//deverei copiar a query anterior e colocar o id mandante
-// e o id do adversario, pegar a resposta e tratar
-
-
-
-    //TODO verificar mais regras de negocios para serem aplicadas no validadorPartida
-//TODO terminar de implementar os testes de todos os endpoints
-
+    @GetMapping("/geral/{idClube}/{idClubeAdversario}")
+    public ResponseEntity retrospectoAdversario(@PathVariable Long idClube, @PathVariable Long idClubeAdversario) {
+        var page = clubeService.efeituarRestrospectivaAdversario(idClube, idClubeAdversario);
+        return ResponseEntity.ok(page);
+    }
 
 
 

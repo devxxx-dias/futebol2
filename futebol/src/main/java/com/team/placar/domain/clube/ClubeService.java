@@ -2,6 +2,7 @@ package com.team.placar.domain.clube;
 
 
 import com.team.placar.domain.partida.Partida;
+import com.team.placar.domain.partida.PartidaRepository;
 import com.team.placar.domain.partida.Resultado;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ConflitException;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
@@ -12,12 +13,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class ClubeService {
 
     @Autowired
     private ClubeRepository repository;
+
+    @Autowired
+    private PartidaRepository partidaRepository;
 
 
     public Clube salvar(DadosClubeCadastro dados) {
@@ -28,23 +33,20 @@ public class ClubeService {
     }
 
     public Clube buscar(Long id) {
-        var clube = repository.findByIdAndStatus(id)
-                .orElseThrow(() -> new EntityNotFoundException("Clube não encontrado pelo id ou não está ativo"));
+        var clube = repository.findByIdAndStatus(id).orElseThrow(() -> new EntityNotFoundException("Clube não encontrado pelo id ou não está ativo"));
 
         return clube;
     }
 
     public void deletar(Long id) {
-        var clube = repository.findByIdAndStatus(id)
-                .orElseThrow(() -> new EntityNotFoundException("Clube não encontrado pelo id ou não está ativo"));
+        var clube = repository.findByIdAndStatus(id).orElseThrow(() -> new EntityNotFoundException("Clube não encontrado pelo id ou não está ativo"));
 
         clube.deletar();
         repository.save(clube);
     }
 
     public Clube atualizar(Long id, DadosClubeCadastro dados) {
-        var clube = repository.findById(id)
-                .orElseThrow(() -> new ValidacaoException("Clube não encontrado pelo id ou não está ativo"));
+        var clube = repository.findById(id).orElseThrow(() -> new ValidacaoException("Clube não encontrado pelo id ou não está ativo"));
         validarNomeEstadoPeloId(id, dados);
         checarDataCriacaoPorPartida(id, dados);
         clube.atualizarInformacoes(dados);
@@ -71,7 +73,7 @@ public class ClubeService {
         return clube;
     }
 
-    public void checarDataCriacaoPorPartida(Long id, DadosClubeCadastro dados ){
+    public void checarDataCriacaoPorPartida(Long id, DadosClubeCadastro dados) {
         LocalDateTime dataCriacaoInicioDoDia = dados.dataCriacao().atStartOfDay();
         var existe = repository.existsPartidasByClubeIdAndDataBefore(id, dataCriacaoInicioDoDia);
         if (existe) {
@@ -79,13 +81,7 @@ public class ClubeService {
         }
     }
 
-    public Page filtrarParams(
-            String nome,
-            String siglaEstado,
-            String localSede,
-            String status,
-            Pageable paginacao
-    ) {
+    public Page filtrarParams(String nome, String siglaEstado, String localSede, String status, Pageable paginacao) {
 
         if (nome != null && !nome.isEmpty()) {
             return findByNome(nome, paginacao);
@@ -129,14 +125,14 @@ public class ClubeService {
     }
 
     public DadosRestropctoClubeDetalhadamento efeituarRestropctiva(Long id) {
-        var retrospectiva = repository.findRestrospecto(id);
-
-        var clube = validarId(id);
+        var clube = buscar(id);
         var totalVitorias = 0;
         var totalDerrotas = 0;
         var totalEmpates = 0;
         var totalGolsFeito = 0;
         var totalGolsSofridos = 0;
+
+        var retrospectiva = repository.findRestrospecto(id);
 
         for (var retro : retrospectiva) {
             if (retro.getResultadoClubeMandante().equals(Resultado.VITORIA)) {
@@ -152,15 +148,54 @@ public class ClubeService {
             totalGolsSofridos += retro.getQtdeGolsClubeVisitante();
         }
 
-        DadosRestropctoClubeDetalhadamento dados = new DadosRestropctoClubeDetalhadamento(clube.getNome(), totalVitorias, totalDerrotas, totalEmpates,
-                totalGolsFeito, totalGolsSofridos);
+        DadosRestropctoClubeDetalhadamento dados = new DadosRestropctoClubeDetalhadamento(clube.getNome(), totalVitorias, totalDerrotas, totalEmpates, totalGolsFeito, totalGolsSofridos);
 
         return dados;
     }
 
-    public Page<Partida> listarRestrospectivaId(Long id, Pageable pageable) {
-        var retrospectiva = repository.findRestrospectoPaginado(id, pageable);
-        return retrospectiva;
+
+
+    public DadosRestrospctoClubeAdversarioDto efeituarRestrospectivaAdversario(Long idClube, Long idClubeAdversario) {
+        var clubeSelecionado = buscar(idClube);
+        var clubeAdversario = buscar(idClubeAdversario);
+
+        List<Partida> retrospectiva = partidaRepository.findRestrospecto2(idClube, idClubeAdversario);
+
+        int totalVitorias = 0;
+        int totalDerrotas = 0;
+        int totalEmpates = 0;
+        int totalGolsFeito = 0;
+        int totalGolsSofridos = 0;
+
+        for (var retro : retrospectiva) {
+            if ((retro.getResultadoClubeMandante().equals(Resultado.VITORIA) && retro.getClubeMandante().getId().equals(idClube)) ||
+                    (retro.getResultadoClubeVisitante().equals(Resultado.VITORIA) && retro.getClubeVisitante().getId().equals(idClube))) {
+                totalVitorias++;
+            } else if ((retro.getResultadoClubeMandante().equals(Resultado.DERROTA) && retro.getClubeMandante().getId().equals(idClube)) ||
+                    (retro.getResultadoClubeVisitante().equals(Resultado.DERROTA) && retro.getClubeVisitante().getId().equals(idClube))) {
+                totalDerrotas++;
+            } else if (retro.getResultadoClubeMandante().equals(Resultado.EMPATE) && retro.getResultadoClubeVisitante().equals(Resultado.EMPATE)) {
+                totalEmpates++;
+            }
+
+            if (retro.getClubeMandante().getId().equals(idClube)) {
+                totalGolsFeito += retro.getQtdeGolsClubeMandante();
+                totalGolsSofridos += retro.getQtdeGolsClubeVisitante();
+            } else {
+                totalGolsFeito += retro.getQtdeGolsClubeVisitante();
+                totalGolsSofridos += retro.getQtdeGolsClubeMandante();
+            }
+        }
+
+        return new DadosRestrospctoClubeAdversarioDto(
+                clubeSelecionado.getNome(),
+                clubeAdversario.getNome(),
+                totalVitorias,
+                totalDerrotas,
+                totalEmpates,
+                totalGolsFeito,
+                totalGolsSofridos
+        );
     }
 
 

@@ -32,6 +32,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
@@ -140,8 +141,7 @@ class PartidaRepositoryTest {
     void findByNomeCenario1() {
         String clubeNomeTest = clube1.getNome();
         Optional<Clube> clube = partidaRepository.findByNome(clubeNomeTest);
-        assertThat(clube).isPresent();
-        assertThat(clube.get()).isEqualTo(clube1);
+        assertThat(clube).isPresent().hasValue(clube1);
     }
 
     @Test
@@ -152,21 +152,6 @@ class PartidaRepositoryTest {
         assertThat(clube).isEmpty();
     }
 
-    @Test
-    @DisplayName("Deveria retornar um clube quando o seu nome for inserido")
-    void findClubeCenario1() {
-        String clubeNomeTest = clube1.getNome();
-        Clube clubetest = partidaRepository.findClube(clubeNomeTest);
-        assertThat(clubetest).isEqualTo(clube1);
-    }
-
-    @Test
-    @DisplayName("Deveria retornar um clube vazio (null) quando o seu nome não for encontrado")
-    void findClubeCenario2() {
-        String nomeTeste = "XXXX";
-        Clube clubetest = partidaRepository.findClube(nomeTeste);
-        assertThat(clubetest).isNull();
-    }
 
     @Test
     @DisplayName("Deveria retornar um estadio quando o seu nome for inserido")

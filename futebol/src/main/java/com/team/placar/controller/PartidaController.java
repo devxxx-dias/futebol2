@@ -60,9 +60,10 @@ public class PartidaController {
         return ResponseEntity.ok(page);
     }
 
-//    10. Listar partidas: A aplicação deverá permitir listar todas as partidas,
-//    ou filtrar a busca por um clube, ou por um estádio, permitindo a paginação dos resultados,
-//    e a ordenação dos resultados por estes mesmos campos,
-//    de forma ascendente ou descendente.
+    @GetMapping("/confronto/{idClube}/{idClubeAdversario}")
+    public ResponseEntity listarClubes(@PathVariable Long idClube, @PathVariable Long idClubeAdversario) {
+        var page = service.listarPartidasRetro(idClube, idClubeAdversario);
+        return ResponseEntity.ok(page);
+    }
 
 }
