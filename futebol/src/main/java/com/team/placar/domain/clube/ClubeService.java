@@ -159,7 +159,7 @@ public class ClubeService {
         var clubeSelecionado = buscar(idClube);
         var clubeAdversario = buscar(idClubeAdversario);
 
-        List<Partida> retrospectiva = partidaRepository.findRestrospecto2(idClube, idClubeAdversario);
+        List<Partida> retrospectiva = partidaRepository.findRestrospecto(idClube, idClubeAdversario);
 
         int totalVitorias = 0;
         int totalDerrotas = 0;

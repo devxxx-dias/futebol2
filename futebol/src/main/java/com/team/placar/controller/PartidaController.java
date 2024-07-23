@@ -31,20 +31,20 @@ public class PartidaController {
     @PutMapping("{id}")
     @Transactional
     public ResponseEntity atualizar(@RequestBody @Valid DadosCadastroPartida dados, @PathVariable Long id) {
-        var partida = service.atualizarPartidaPeloId(dados,id);
+        var partida = service.atualizarPartidaPeloId(dados, id);
         return ResponseEntity.ok().body(new DadosDetalhadamentoPartida(partida));
     }
 
     @DeleteMapping("{id}")
     @Transactional
-    public ResponseEntity deletar(@PathVariable Long id){
+    public ResponseEntity deletar(@PathVariable Long id) {
         var partida = service.validarId(id);
         repository.delete(partida);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("{id}")
-    public ResponseEntity buscarId(@PathVariable Long id){
+    public ResponseEntity buscarId(@PathVariable Long id) {
         var partida = service.validarId(id);
         return ResponseEntity.ok().body(new DadosDetalhadamentoPartida(partida));
 
@@ -54,9 +54,14 @@ public class PartidaController {
     public ResponseEntity<Page<DadosDetalhadamentoPartida>> listarPartidas(
             @RequestParam(required = false) String clube,
             @RequestParam(required = false) String estadio,
-            @PageableDefault(size = 10) Pageable paginacao){
+            @RequestParam(required = false) String ranking,
+            @PageableDefault(size = 10) Pageable paginacao) {
 
-        var page = service.filtrarParams(clube, estadio, paginacao);
+        var page = service.filtrarParams(clube,
+                estadio,
+                ranking,
+                paginacao);
+        System.out.println(page);
         return ResponseEntity.ok(page);
     }
 

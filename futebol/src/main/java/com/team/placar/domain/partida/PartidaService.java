@@ -76,17 +76,17 @@ public class PartidaService {
     }
 
 
-    public Page filtrarParams(String clubeNome, String estadioNome, Pageable paginacao) {
-        var page = repository.findAll(paginacao).map(DadosDetalhadamentoPartida::new);
-
+    public Page filtrarParams(String clubeNome,
+                              String estadioNome,
+                              String ranking,
+                              Pageable paginacao) {
 
         if (clubeNome != null && !clubeNome.isEmpty()) {
             var clube = repository.findClube(clubeNome);
-            if( clube != null){
+            if (clube != null) {
                 var partida = encontrarClubeId(clube.getId(), paginacao);
                 return partida.map(DadosDetalhadamentoPartida::new);
-            }
-            else {
+            } else {
                 return new PageImpl<>(Collections.emptyList(), paginacao, 0);
             }
         }
@@ -97,24 +97,44 @@ public class PartidaService {
             return partida.map(DadosDetalhadamentoPartida::new);
         }
 
+        if (ranking != null && !ranking.isEmpty()) {
+            var obterRanking = getRanking(ranking, paginacao);
+            return obterRanking;
+        }
 
+        var page = repository.findAll(paginacao).map(DadosDetalhadamentoPartida::new);
         return page;
     }
 
+    public Page<ClubeRankingDTO> getRanking(String criteria, Pageable paginacao) {
+        switch (criteria) {
+            case "total_jogos":
+                return repository.findRankingByTotalJogos(paginacao);
+            case "total_vitorias":
+                return repository.findRankingByTotalVitorias(paginacao);
+            case "total_gols":
+                return repository.findRankingByTotalGols(paginacao);
+            case "total_pontos":
+                return repository.findRankingByTotalPontos(paginacao);
+            default:
+                return new PageImpl<>(Collections.emptyList(), paginacao, 0);
+        }
+    }
 
-   public Map listarPartidasRetro(Long idClube, Long idClubeAdversario) {
+
+    public Map listarPartidasRetro(Long idClube, Long idClubeAdversario) {
         clubeService.buscar(idClube);
         clubeService.buscar(idClubeAdversario);
 
-       List<Partida> retrospectiva = repository.findRestrospecto2(idClube, idClubeAdversario);
-       var restrospectoClube = clubeService.efeituarRestrospectivaAdversario(idClube, idClubeAdversario);
-       var restrospectoClubeAdversario = clubeService.efeituarRestrospectivaAdversario(idClubeAdversario, idClube);
+        List<Partida> retrospectiva = repository.findRestrospecto(idClube, idClubeAdversario);
+        var restrospectoClube = clubeService.efeituarRestrospectivaAdversario(idClube, idClubeAdversario);
+        var restrospectoClubeAdversario = clubeService.efeituarRestrospectivaAdversario(idClubeAdversario, idClube);
 
 
-       Map<String, Object> response = new HashMap<>();
-       response.put("ListaPartida", retrospectiva.stream().map(DadosDetalhadamentoPartida::new));
-       response.put("RetrospectoClube", restrospectoClube);
-       response.put("RetrospectoAdversario", restrospectoClubeAdversario);
+        Map<String, Object> response = new HashMap<>();
+        response.put("ListaPartida", retrospectiva.stream().map(DadosDetalhadamentoPartida::new));
+        response.put("RetrospectoClube", restrospectoClube);
+        response.put("RetrospectoAdversario", restrospectoClubeAdversario);
 
         return response;
     }
