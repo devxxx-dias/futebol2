@@ -1,23 +1,15 @@
 package com.team.placar.controller;
 
 import com.team.placar.domain.clube.*;
-import com.team.placar.domain.partida.DadosDetalhadamentoPartida;
 import jakarta.validation.Valid;
-import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.config.EnableSpringDataWebSupport;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.time.LocalDate;
-
-import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
 
 
 @RestController
@@ -55,10 +47,13 @@ public class ClubeController {
         return ResponseEntity.noContent().build();
     }
 
+    //filtro avancado aplicado - teste
     @GetMapping("{id}")
-    public ResponseEntity buscar(@PathVariable Long id) {
-        var clube = clubeService.buscar(id);
-        return ResponseEntity.ok().body(new DadosClubeDetalhadamento(clube));
+    public ResponseEntity<Page<Detalhadamento>> buscar(@PathVariable Long id,
+                                                       @RequestParam(required = false) String atuouComo,
+                                                       Pageable paginacao) {
+        var clube = clubeService.filtrarBuscar(id, atuouComo, paginacao);
+        return ResponseEntity.ok(clube);
     }
 
     @GetMapping
@@ -72,7 +67,6 @@ public class ClubeController {
         return ResponseEntity.ok(page);
     }
 
-
     @GetMapping("/geral/{id}")
     public ResponseEntity restropctoGeral(@PathVariable Long id) {
         var retrospectiva = clubeService.efeituarRestropctiva(id);
@@ -84,8 +78,6 @@ public class ClubeController {
         var page = clubeService.efeituarRestrospectivaAdversario(idClube, idClubeAdversario);
         return ResponseEntity.ok(page);
     }
-
-
 
 }
 

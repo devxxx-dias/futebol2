@@ -10,7 +10,7 @@ public record DadosClubeDetalhadamento(
         String localSede,
         LocalDate dataCriacao,
         Boolean status
-) {
+) implements Detalhadamento{
     public DadosClubeDetalhadamento(Clube clube) {
         this(
                 clube.getId(),

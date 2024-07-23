@@ -1,6 +1,7 @@
 package com.team.placar.domain.clube;
 
 
+import com.team.placar.domain.partida.DadosDetalhadamentoPartida;
 import com.team.placar.domain.partida.Partida;
 import com.team.placar.domain.partida.PartidaRepository;
 import com.team.placar.domain.partida.Resultado;
@@ -9,10 +10,12 @@ import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -154,7 +157,6 @@ public class ClubeService {
     }
 
 
-
     public DadosRestrospctoClubeAdversarioDto efeituarRestrospectivaAdversario(Long idClube, Long idClubeAdversario) {
         var clubeSelecionado = buscar(idClube);
         var clubeAdversario = buscar(idClubeAdversario);
@@ -197,6 +199,29 @@ public class ClubeService {
                 totalGolsSofridos
         );
     }
+    //TODO realizar os testes unitários e adaptação dos novas implementacoes nos teste tambeém
+    //Filtro Avancado
+    public Page<Detalhadamento> filtrarBuscar(Long id, String atuouComo, Pageable paginacao) {
+        Page<Detalhadamento> page = null;
+        System.out.println();
+        if (atuouComo != null && !atuouComo.isEmpty()) {
+            switch (atuouComo.toLowerCase()) {
+                case "mandante":
+                    return page = repository.findByClubeMandante(id, paginacao).map(DadosDetalhadamentoPartida::new);
+                case "visitante":
+                    return page = repository.findByClubeVisitante(id, paginacao).map(DadosDetalhadamentoPartida::new);
+                default:
+                    return page = new PageImpl<>(Collections.emptyList(), paginacao, 0);
+            }
+        }
 
+         page = repository.findByIdPage(id, paginacao).map(DadosClubeDetalhadamento::new);
+
+        if (page.isEmpty()) {
+            throw new EntityNotFoundException("Clube não encontrado pelo ID fornecido");
+        }
+
+        return page;
+    }
 
 }

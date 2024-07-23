@@ -1,5 +1,7 @@
 package com.team.placar.domain.partida;
 
+import com.team.placar.domain.clube.Detalhadamento;
+
 import java.time.LocalDateTime;
 
 public record DadosDetalhadamentoPartida(
@@ -13,7 +15,7 @@ public record DadosDetalhadamentoPartida(
         Resultado resultadoClubeVisitante,
         LocalDateTime dataHora
 
-) {
+) implements Detalhadamento {
 
     public DadosDetalhadamentoPartida(Partida partida) {
         this(partida.getId(),

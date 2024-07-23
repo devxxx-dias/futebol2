@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -59,92 +60,99 @@ public interface PartidaRepository extends JpaRepository<Partida, Long> {
 
 
     @Query("""
-    SELECT new com.team.placar.domain.partida.ClubeRankingDTO(
-        c.id,
-        c.nome,
-        COUNT(p),
-        SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 1 ELSE 0 END),
-        SUM(CASE WHEN p.clubeMandante.id = c.id THEN p.qtdeGolsClubeMandante ELSE p.qtdeGolsClubeVisitante END),
-        SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 3
-            WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
-            ELSE 0 END)
-    )
-    FROM partida p
-    JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
-    GROUP BY c.id, c.nome
-    HAVING COUNT(p) > 0
-    ORDER BY COUNT(p) DESC
-""")
+                SELECT new com.team.placar.domain.partida.ClubeRankingDTO(
+                    c.id,
+                    c.nome,
+                    COUNT(p),
+                    SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN p.clubeMandante.id = c.id THEN p.qtdeGolsClubeMandante ELSE p.qtdeGolsClubeVisitante END),
+                    SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 3
+                        WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
+                        ELSE 0 END)
+                )
+                FROM partida p
+                JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
+                GROUP BY c.id, c.nome
+                HAVING COUNT(p) > 0
+                ORDER BY COUNT(p) DESC
+            """)
     Page<ClubeRankingDTO> findRankingByTotalJogos(Pageable pageable);
 
 
     @Query("""
-    SELECT new com.team.placar.domain.partida.ClubeRankingDTO(
-        c.id,
-        c.nome,
-        COUNT(p),
-        SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 1 ELSE 0 END),
-        SUM(CASE WHEN p.clubeMandante.id = c.id THEN p.qtdeGolsClubeMandante ELSE p.qtdeGolsClubeVisitante END),
-        SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 3
-            WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
-            ELSE 0 END)
-    )
-    FROM partida p
-    JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
-    GROUP BY c.id, c.nome
-    HAVING SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
-     OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 1 ELSE 0 END) > 0
-     ORDER BY COUNT(p) DESC
-""")
+                SELECT new com.team.placar.domain.partida.ClubeRankingDTO(
+                    c.id,
+                    c.nome,
+                    COUNT(p),
+                    SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN p.clubeMandante.id = c.id THEN p.qtdeGolsClubeMandante ELSE p.qtdeGolsClubeVisitante END),
+                    SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 3
+                        WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
+                        ELSE 0 END)
+                )
+                FROM partida p
+                JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
+                GROUP BY c.id, c.nome
+                HAVING SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
+                 OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 1 ELSE 0 END) > 0
+                 ORDER BY COUNT(p) DESC
+            """)
     Page<ClubeRankingDTO> findRankingByTotalVitorias(Pageable pageable);
 
 
     @Query("""
-    SELECT new com.team.placar.domain.partida.ClubeRankingDTO(
-        c.id,
-        c.nome,
-        COUNT(p),
-        SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
-         OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 1 ELSE 0 END),
-        SUM(CASE WHEN p.clubeMandante.id = c.id THEN p.qtdeGolsClubeMandante ELSE p.qtdeGolsClubeVisitante END),
-        SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
-        OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 3
-            WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id)
-            OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
-            ELSE 0 END)
-    )
-    FROM partida p
-    JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
-    GROUP BY c.id, c.nome
-    HAVING SUM(CASE WHEN p.clubeMandante.id = c.id THEN p.qtdeGolsClubeMandante ELSE p.qtdeGolsClubeVisitante END) > 0
-     ORDER BY COUNT(p) DESC
-""")
+                SELECT new com.team.placar.domain.partida.ClubeRankingDTO(
+                    c.id,
+                    c.nome,
+                    COUNT(p),
+                    SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
+                     OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN p.clubeMandante.id = c.id THEN p.qtdeGolsClubeMandante ELSE p.qtdeGolsClubeVisitante END),
+                    SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
+                    OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 3
+                        WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id)
+                        OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
+                        ELSE 0 END)
+                )
+                FROM partida p
+                JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
+                GROUP BY c.id, c.nome
+                HAVING SUM(CASE WHEN p.clubeMandante.id = c.id THEN p.qtdeGolsClubeMandante ELSE p.qtdeGolsClubeVisitante END) > 0
+                 ORDER BY COUNT(p) DESC
+            """)
     Page<ClubeRankingDTO> findRankingByTotalGols(Pageable pageable);
 
     @Query("""
-    SELECT new com.team.placar.domain.partida.ClubeRankingDTO(
-        c.id,
-        c.nome,
-        COUNT(p),
-        SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
-        OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 1 ELSE 0 END),
-        SUM(CASE WHEN p.clubeMandante.id = c.id THEN p.qtdeGolsClubeMandante ELSE p.qtdeGolsClubeVisitante END),
-        SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
-        OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 3
-            WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id)
-            OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
-            ELSE 0 END))
-    FROM partida p
-    JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
-    GROUP BY c.id, c.nome
-    HAVING SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
-    OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 3
-            WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id)
-            OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
-            ELSE 0 END) > 0
-             ORDER BY COUNT(p) DESC
-""")
+                SELECT new com.team.placar.domain.partida.ClubeRankingDTO(
+                    c.id,
+                    c.nome,
+                    COUNT(p),
+                    SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
+                    OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN p.clubeMandante.id = c.id THEN p.qtdeGolsClubeMandante ELSE p.qtdeGolsClubeVisitante END),
+                    SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
+                    OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 3
+                        WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id)
+                        OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
+                        ELSE 0 END))
+                FROM partida p
+                JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
+                GROUP BY c.id, c.nome
+                HAVING SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
+                OR (p.resultadoClubeVisitante = 'VITORIA' AND p.clubeVisitante.id = c.id) THEN 3
+                        WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id)
+                        OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
+                        ELSE 0 END) > 0
+                         ORDER BY COUNT(p) DESC
+            """)
     Page<ClubeRankingDTO> findRankingByTotalPontos(Pageable pageable);
+
+        @Query("""
+        SELECT p
+        FROM partida p
+        WHERE (p.qtdeGolsClubeMandante - p.qtdeGolsClubeVisitante) >= 3
+    """)
+        Page<Partida> findPartidasByGoleadas(Pageable paginacao);
 
 
 }

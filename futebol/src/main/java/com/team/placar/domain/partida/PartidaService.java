@@ -97,6 +97,12 @@ public class PartidaService {
             return partida.map(DadosDetalhadamentoPartida::new);
         }
 
+        if (ranking.equals("goleadas")) {
+            System.out.println(ranking);
+            var goleadas = repository.findPartidasByGoleadas(paginacao);
+            return goleadas.map(DadosDetalhadamentoPartida::new);
+        }
+
         if (ranking != null && !ranking.isEmpty()) {
             var obterRanking = getRanking(ranking, paginacao);
             return obterRanking;
@@ -107,7 +113,7 @@ public class PartidaService {
     }
 
     public Page<ClubeRankingDTO> getRanking(String criteria, Pageable paginacao) {
-        switch (criteria) {
+        switch (criteria.toLowerCase()) {
             case "total_jogos":
                 return repository.findRankingByTotalJogos(paginacao);
             case "total_vitorias":

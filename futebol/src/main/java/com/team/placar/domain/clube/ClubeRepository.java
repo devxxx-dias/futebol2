@@ -41,36 +41,16 @@ public interface ClubeRepository  extends JpaRepository<Clube, Long> {
                 "AND p.dataHora < :dataCriacao")
         boolean existsPartidasByClubeIdAndDataBefore( Long clubeId,  LocalDateTime dataCriacao);
 
-//    @Query("""
-//            SELECT p FROM partida p
-//             WHERE p.clubeMandante.id = :idClube AND p.clubeVisitante.id = :idClubeAdversario
-//             OR p.clubeMandante.id = :idClubeAdversario OR p.clubeVisitante.id = :idClube""")
-//    Page<Partida> findRestrospectoAdversario(Long idClube, Long idClubeAdversario, Pageable pageable);
 
+    @Query("SELECT p FROM partida p WHERE p.clubeMandante.id = :clubeId")
+    Page<Partida> findByClubeMandante(@Param("clubeId") Long clubeId, Pageable pageable);
 
-//    @Query("""
-//        SELECT p
-//        FROM partida p
-//        WHERE (p.clubeMandante.id = :idClube AND p.clubeVisitante.id = :idClubeAdversario)
-//           OR (p.clubeMandante.id = :idClubeAdversario AND p.clubeVisitante.id = :idClube)
-//       """)
-//    List<Partida> findRetrospectoAdversario(Long idClube, Long idClubeAdversario);
+    @Query("SELECT p FROM partida p WHERE p.clubeVisitante.id = :clubeId")
+    Page<Partida> findByClubeVisitante(@Param("clubeId") Long clubeId, Pageable pageable);
 
-
-    @Query("""
-        SELECT p 
-        FROM partida p
-        WHERE (p.clubeMandante.id = :idClube AND p.clubeVisitante.id = :idClubeAdversario)
-           OR (p.clubeMandante.id = :idClubeAdversario AND p.clubeVisitante.id = :idClube)
-       """)
-    List<Partida> findRestrospecto2( Long idClube, Long idClubeAdversario);
-
-
-
-
-
-
+    @Query("SELECT c FROM Clube c WHERE c.id = :id AND c.status = true")
+    Page<Clube> findByIdPage(Long id, Pageable pageable);
 }
 
 
-//@Query("SELECT p FROM partida p WHERE (p.clubeMandante.id = :idClube AND p.clubeVisitante.id = :idClubeAdversario)")
+

@@ -61,7 +61,6 @@ public class PartidaController {
                 estadio,
                 ranking,
                 paginacao);
-        System.out.println(page);
         return ResponseEntity.ok(page);
     }
 
