@@ -199,11 +199,11 @@ public class ClubeService {
                 totalGolsSofridos
         );
     }
-    //TODO realizar os testes unitários e adaptação dos novas implementacoes nos teste tambeém
-    //Filtro Avancado
+
     public Page<Detalhadamento> filtrarBuscar(Long id, String atuouComo, Pageable paginacao) {
+        buscar(id);
         Page<Detalhadamento> page = null;
-        System.out.println();
+
         if (atuouComo != null && !atuouComo.isEmpty()) {
             switch (atuouComo.toLowerCase()) {
                 case "mandante":

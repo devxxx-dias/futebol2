@@ -10,7 +10,6 @@ public record DadosClubeCadastro(
         @Size(min = 2, message = "O nome clube dever possuir no mínimo 2 letras")
         String nome,
         @ValidBrazilState
-        @Pattern(regexp = "^[A-Za-z]{2}$", message = "SiglaEstado deve ter exatamente 2 caracteres e apenas letras")
         String siglaEstado,
         @NotBlank(message = "A localidade da sede deve ser inserida")
         String localSede,

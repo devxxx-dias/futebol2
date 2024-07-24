@@ -36,13 +36,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -971,15 +972,10 @@ class PartidaControllerTest {
         Long id = 1L;
 
         when(partidaService.validarId(eq(id)))
-                .thenThrow(new EntityNotFoundException("Partida não encontrada pelo ID"));
-
+                .thenReturn(any(Partida.class));
 
         var response = mvc.perform(delete("/partida/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(dadosCadastroPartidaJacksonTester.write(
-                                dadosCadastroPartida
-                        ).getJson())
-                )
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
 
@@ -1090,7 +1086,7 @@ class PartidaControllerTest {
         var listaPartidas = List.of(partidaMandanteVitoria, partidaMandanteDerrota, partidaEmpate);
         Page<Partida> paginaPartida = new PageImpl<>(listaPartidas);
 
-        when(partidaService.filtrarParams(eq(null), eq(null), any(Pageable.class)))
+        when(partidaService.filtrarParams(eq(null), eq(null),eq(null), any(Pageable.class)))
                 .thenReturn(paginaPartida);
 
         var response = mvc.perform(get("/partida")
@@ -1107,8 +1103,9 @@ class PartidaControllerTest {
         assertThat(contentNode.isArray()).isTrue();
         assertThat(contentNode.size()).isEqualTo(listaPartidas.size());
 
-        verify(partidaService).filtrarParams( eq(null), eq(null), any(Pageable.class));
+        verify(partidaService).filtrarParams( eq(null), eq(null),eq(null), any(Pageable.class));
     }
+
 
     @Test
     @DisplayName("Deveria retornar código http 200 quando o parametro Clube for preenchido e retornar 1 partida")
@@ -1120,7 +1117,7 @@ class PartidaControllerTest {
         when(partidaService.encontrarClubeId(anyLong(), any(Pageable.class)))
                 .thenReturn(paginaPartida);
 
-        when(partidaService.filtrarParams(eq(nome), eq(null), any(Pageable.class)))
+        when(partidaService.filtrarParams(eq(nome), eq(null),eq(null), any(Pageable.class)))
                 .thenReturn(paginaPartida);
 
         var response = mvc.perform(get("/partida")
@@ -1146,7 +1143,7 @@ class PartidaControllerTest {
         var listaPartidas = List.of(partidaMandanteVitoria, partidaMandanteDerrota, partidaEmpate);
         Page<Partida> paginaPartida = new PageImpl<>(listaPartidas);
 
-        when(partidaService.filtrarParams(eq(null), eq(nome), any(Pageable.class)))
+        when(partidaService.filtrarParams(eq(null), eq(nome),eq(null), any(Pageable.class)))
                 .thenReturn(paginaPartida);
 
         var response = mvc.perform(get("/partida")
@@ -1164,4 +1161,159 @@ class PartidaControllerTest {
         assertThat(contentNode.size()).isEqualTo(listaPartidas.size());
     }
 
+    @Test
+    @DisplayName("FILTRO AVANCADO - Deveria retornar código http 200 quando o parametro RANKING for preenchido com a expressão - goleadas - retornando as partidas com diferencas de gols de no minimo 3")
+    void listarPartidasCenario4() throws Exception {
+        String ranking = "goleadas";
+        var listaPartidas = List.of(partidaMandanteVitoria, partidaMandanteDerrota, partidaEmpate);
+        Page<Partida> paginaPartida = new PageImpl<>(listaPartidas);
+
+        when(partidaService.filtrarParams(eq(null), eq(null),eq(ranking), any(Pageable.class)))
+                .thenReturn(paginaPartida);
+
+        var response = mvc.perform(get("/partida")
+                        .param("ranking", ranking)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        JsonNode jsonResponse = objectMapper.readTree(response.getContentAsString());
+        JsonNode contentNode = jsonResponse.get("content");
+
+        assertThat(contentNode.isArray()).isTrue();
+        assertThat(contentNode.size()).isEqualTo(listaPartidas.size());
+    }
+
+    @Test
+    @DisplayName("Deveria retornar código http 200 quando o parametro RANKING for preenchido com a expressão - total_jogos - retornando os clubes que mais jogaram")
+    void listarPartidasCenario5() throws Exception {
+        String ranking = "total_jogos";
+        Page<ClubeRankingDTO> paginaRanking = new PageImpl<>(anyList());
+        when(partidaService.getRanking(ranking, any(Pageable.class)))
+                .thenReturn(paginaRanking);
+
+        var response = mvc.perform(get("/partida")
+                        .param("ranking", ranking)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+    }
+
+    @Test
+    @DisplayName("Deveria retornar código http 200 quando o parametro RANKING for preenchido com a expressão - total_vitorias - retornando os clubes que mais venceram")
+    void listarPartidasCenario6() throws Exception {
+        String ranking = "total_vitorias";
+        Page<ClubeRankingDTO> paginaRanking = new PageImpl<>(anyList());
+        when(partidaService.getRanking(ranking, any(Pageable.class)))
+                .thenReturn(paginaRanking);
+
+        var response = mvc.perform(get("/partida")
+                        .param("ranking", ranking)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+    }
+
+    @Test
+    @DisplayName("Deveria retornar código http 200 quando o parametro RANKING for preenchido com a expressão - total_gols - retornando os clubes que mais fizeram gols")
+    void listarPartidasCenario7() throws Exception {
+        String ranking = "total_gols";
+        Page<ClubeRankingDTO> paginaRanking = new PageImpl<>(anyList());
+        when(partidaService.getRanking(ranking, any(Pageable.class)))
+                .thenReturn(paginaRanking);
+
+        var response = mvc.perform(get("/partida")
+                        .param("ranking", ranking)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar código http 200 quando o parametro RANKING for preenchido com a expressão - total_gols - retornando os clubes que mais fizeram gols")
+    void listarPartidasCenario8() throws Exception {
+        String ranking = "total_pontos";
+        Page<ClubeRankingDTO> paginaRanking = new PageImpl<>(anyList());
+        when(partidaService.getRanking(ranking, any(Pageable.class)))
+                .thenReturn(paginaRanking);
+
+        var response = mvc.perform(get("/partida")
+                        .param("ranking", ranking)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar código http 200 quando o parametro RANKING for preenchido incorretamente retornando uma página vazia")
+    void listarPartidasCenario9() throws Exception {
+        String ranking = "-";
+        Page<ClubeRankingDTO> paginaRanking = new PageImpl<>(anyList());
+        when(partidaService.getRanking(ranking, any(Pageable.class)))
+                .thenReturn(paginaRanking);
+
+        var response = mvc.perform(get("/partida")
+                        .param("ranking", ranking)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+    }
+
+
+    @Test
+    @DisplayName("Deveria retornar codigo http 200 quando TODOS os parametros NÃO estiverem selecionados e retorna uma lista de partidas")
+    void listarConfrontoClubes_1()throws Exception  {
+        Long idClube = 1L;
+        Long idClubeAdversario = 2L;
+        var listaPartidas = List.of(partidaMandanteVitoria, partidaMandanteDerrota, partidaEmpate);
+        Map<String, Object> resultado = new HashMap<>();
+        resultado.put("teste", listaPartidas);
+
+        when(partidaService.listarPartidasRetro(idClube,idClubeAdversario))
+                .thenReturn(resultado);
+
+        var response = mvc.perform(get("/partida/confronto/{idClube}/{idClubeAdversario}", idClube, idClubeAdversario)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar codigo http 404 quando for o idClube ou idClubeAdversario não existirem no banco de dados ")
+    void listarConfrontoClubes_2()throws Exception  {
+        Long idClube = 0L;
+        Long idClubeAdversario = 0L;
+        var listaPartidas = List.of(partidaMandanteVitoria, partidaMandanteDerrota, partidaEmpate);
+        Map<String, Object> resultado = new HashMap<>();
+        resultado.put("teste", listaPartidas);
+
+        when(partidaService.listarPartidasRetro(idClube,idClubeAdversario))
+                .thenThrow(new EntityNotFoundException("teste"));
+
+        var response = mvc.perform(get("/partida/confronto/{idClube}/{idClubeAdversario}", idClube, idClubeAdversario)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+
+    }
 }

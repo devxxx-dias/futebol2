@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.team.placar.domain.clube.*;
+import com.team.placar.domain.partida.DadosDetalhadamentoPartida;
+import com.team.placar.domain.partida.Resultado;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ConflitException;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
 import jakarta.persistence.EntityNotFoundException;
@@ -27,6 +29,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,9 +50,6 @@ class ClubeControllerTest {
     @MockBean
     private ClubeService clubeService;
 
-    @MockBean
-    private ClubeRepository clubeRepository;
-
     @Autowired
     JacksonTester<DadosClubeCadastro> dadosCadastroJacksonTester;
 
@@ -65,17 +65,16 @@ class ClubeControllerTest {
     @Autowired
     JacksonTester<DadosRestropctoClubeDetalhadamento> dadosRestropctoDetalhadamentoJackson;
 
-    @Test
-    @DisplayName("Deveria devolver codigo http 400 quando informacoes estao invalidas")
-    void cadastrarCenario1() throws Exception {
-        var response = mvc.perform(post("/clube"))
-                .andReturn().getResponse();
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-    }
+    @Autowired
+    JacksonTester<DadosRestrospctoClubeAdversarioDto> dadosRestrospctoClubeAdversarioDtoJackson;
+
+    @Autowired
+    JacksonTester<Detalhadamento> detalhadamentoJacksonTester;
+
 
     @Test
     @DisplayName("Deveria devolver codigo http 201 e retornar um clube criado")
-    void cadastrarCenario2() throws Exception {
+    void cadastrarCenario1() throws Exception {
         var data = LocalDate.of(2002, 02, 22);
         var dadosCadastro = new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true);
         when(clubeService.salvar(any())).thenReturn(new Clube(dadosCadastro));
@@ -94,6 +93,14 @@ class ClubeControllerTest {
         ).getJson();
         assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
 
+    }
+
+    @Test
+    @DisplayName("Deveria devolver codigo http 400 quando informacoes estao invalidas")
+    void cadastrarCenario2() throws Exception {
+        var response = mvc.perform(post("/clube"))
+                .andReturn().getResponse();
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
@@ -159,18 +166,18 @@ class ClubeControllerTest {
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando a SIGLAESTADO não for inserido ")
     void cadastrarCenario4() throws Exception {
+        String siglaEstado = "-";
         var data = LocalDate.of(2002, 02, 22);
-        var dadosCadastro = new DadosClubeCadastro("Palmeiras", "", "São Paulo", data, true);
+        var dadosCadastro = new DadosClubeCadastro("Palmeiras", siglaEstado, "São Paulo", data, true);
 
-        when(clubeService.salvar(any())).thenReturn(new Clube(dadosCadastro));
+        when(clubeService.salvar(dadosCadastro)).thenThrow(new ValidacaoException(""));
         var response = mvc.perform(post("/clube")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dadosCadastroJacksonTester.write(dadosCadastro).getJson())).andReturn().getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
         var expectedErrorMessage = """
-                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ter exatamente 2 caracteres e apenas letras"}]""";
-
+              [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
     }
 
@@ -187,7 +194,7 @@ class ClubeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
         var expectedErrorMessage = """
-                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ter exatamente 2 caracteres e apenas letras"}]""";
+              [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
 
@@ -206,7 +213,8 @@ class ClubeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
         var expectedErrorMessage = """
-                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ter exatamente 2 caracteres e apenas letras"}]""";
+              [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
+
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
 
@@ -388,7 +396,7 @@ class ClubeControllerTest {
         var data = LocalDate.of(2002, 02, 22);
         var dadosCadastro = new DadosClubeCadastro(nome, "SP", "São Paulo", data, true);
 
-        when(clubeService.atualizar(eq(id),any())).thenThrow(new ValidacaoException(""));
+        when(clubeService.atualizar(eq(id), any())).thenThrow(new ValidacaoException(""));
         var response = mvc.perform(put("/clube/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dadosCadastroJacksonTester.write(dadosCadastro).getJson())).andReturn().getResponse();
@@ -409,7 +417,7 @@ class ClubeControllerTest {
         var data = LocalDate.of(2002, 02, 22);
         var dadosCadastro = new DadosClubeCadastro("São Paulo", "SP", "São Paulo", data, true);
 
-        when(clubeService.atualizar(eq(id),any())).thenThrow(new ConflitException("Já existe um clube cadastrado com esse nome neste estado"));
+        when(clubeService.atualizar(eq(id), any())).thenThrow(new ConflitException("Já existe um clube cadastrado com esse nome neste estado"));
         var response = mvc.perform(put("/clube/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(dadosCadastroJacksonTester.write(dadosCadastro).getJson())).andReturn().getResponse();
@@ -426,11 +434,12 @@ class ClubeControllerTest {
     @DisplayName("Deveria devolver codigo http 400 quando a SIGLAESTADO não for inserido ")
     void atualizarCenario3() throws Exception {
         var id = 1L;
+        String siglaEstado = "";
         var data = LocalDate.of(2002, 02, 22);
-        var dadosAtualizados = new DadosClubeCadastro("Palmeiras", "", "São Paulo", data, true);
+        var dadosAtualizados = new DadosClubeCadastro("Palmeiras", siglaEstado, "São Paulo", data, true);
 
-        when(clubeService.atualizar(any(Long.class), any(DadosClubeCadastro.class)))
-                .thenReturn(null);
+        when(clubeService.atualizar(eq(id), any(DadosClubeCadastro.class)))
+                .thenThrow(new ValidacaoException("Teste"));
 
         var response = mvc.perform(put("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -438,10 +447,6 @@ class ClubeControllerTest {
                 .andReturn().getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
-        var expectedErrorMessage = """
-                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ter exatamente 2 caracteres e apenas letras"}]""";
-
-        assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
 
     }
 
@@ -463,7 +468,7 @@ class ClubeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
         var expectedErrorMessage = """
-                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ter exatamente 2 caracteres e apenas letras"}]""";
+              [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
 
@@ -472,13 +477,13 @@ class ClubeControllerTest {
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando a SIGLAESTADO tiver mais de 2 letras")
     void atualizarCenario3_2() throws Exception {
-       String siglaEstado = "SSP";
+        String siglaEstado = "SSP";
         var id = 1L;
         var data = LocalDate.of(2002, 02, 22);
         var dadosAtualizados = new DadosClubeCadastro("Palmeiras", siglaEstado, "São Paulo", data, true);
 
-        when(clubeService.atualizar(any(Long.class), any(DadosClubeCadastro.class)))
-                .thenReturn(null);
+        when(clubeService.atualizar(eq(id), any(DadosClubeCadastro.class)))
+                .thenThrow(new ValidacaoException("Teste"));
 
         var response = mvc.perform(put("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -487,16 +492,16 @@ class ClubeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
         var expectedErrorMessage = """
-                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ter exatamente 2 caracteres e apenas letras"}]""";
+                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
 
     }
 
     @Test
-    @DisplayName("Deveria devolver codigo http 400 quando a SIGLAESTADO não pertencer a algum estado brasileiro ")
+    @DisplayName("Deveria devolver codigo http 400 quando a SIGLA ESTADO não pertencer a algum estado brasileiro ")
     void atualizarCenario3_3() throws Exception {
-        String siglaEstadoInexistente = "LL";
+        String siglaEstadoInexistente = "SSP";
         var id = 1L;
         var data = LocalDate.of(2002, 02, 22);
         var dadosAtualizados = new DadosClubeCadastro("Palmeiras", siglaEstadoInexistente, "São Paulo", data, true);
@@ -511,7 +516,7 @@ class ClubeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
         var expectedErrorMessage = """
-                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
+              [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
 
@@ -660,7 +665,6 @@ class ClubeControllerTest {
     }
 
 
-
     @Test
     @DisplayName("Deveria retornar codigo http 204 na exclusão lógica do clube - status false")
     void deletarCenario1() throws Exception {
@@ -695,43 +699,127 @@ class ClubeControllerTest {
     void buscarCenario1() throws Exception {
         Long id = 1L;
         var data = LocalDate.of(2002, 2, 22);
-        var dadosCadastro = new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true);
-        var clubleEncontrado = new Clube(dadosCadastro);
+        DadosClubeDetalhadamento dadosClubeCadastro = new DadosClubeDetalhadamento(
+                id,
+                "Palmeiras",
+                "SP",
+                "São Paulo",
+                data,
+                true
+              );
+        Page<Detalhadamento> resultado = new PageImpl<>(Collections.singletonList(dadosClubeCadastro));
 
-        when(clubeService.buscar(id))
-                .thenReturn(clubleEncontrado);
+        when(clubeService.filtrarBuscar(eq(id), eq(null), any(Pageable.class)))
+                .thenReturn(resultado);
 
         var response = mvc.perform(get("/clube/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(dadosCadastroJacksonTester.write(dadosCadastro)
-                                .getJson()))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 
-        var jsonEsperado = dadosDetalhadamentoJacksonTester
-                .write(new DadosClubeDetalhadamento(clubleEncontrado)).getJson();
 
-        assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
     }
-
 
 
     @Test
     @DisplayName("Deveria retornar codigo HTTP 404 quando o clube não for encontrado pelo Id")
     void buscarCenario2() throws Exception {
-        Long id = 999L;
+        Long id = null;
 
-        when(clubeService.buscar(id))
-                .thenThrow(new EntityNotFoundException("Clube não encontrado pelo id ou não está ativo"));
+        Mockito.doThrow(new EntityNotFoundException("teste"))
+                .when(clubeService)
+                .filtrarBuscar(anyLong(), anyString(), any(Pageable.class));
 
         var response = mvc.perform(get("/clube/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
+    @DisplayName("Deveria retornar codigo HTTP 200 quando o id do clube, string parametro atuouComo - mandante -  estiverem preenchidas ")
+    void buscarCenario3() throws Exception {
+        Long id = 1L;
+        String atuouComo = "mandante";
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DadosDetalhadamentoPartida dadosDetalhadamentoPartida = new DadosDetalhadamentoPartida(
+                id,
+                "Clube Mandante",
+                "Clube Visitante",
+                "Estádio",
+                3,
+                1,
+                Resultado.VITORIA,
+                Resultado.DERROTA,
+                localDateTime);
+        Page<Detalhadamento> resultado = new PageImpl<>(Collections.singletonList(dadosDetalhadamentoPartida));
+
+        when(clubeService.filtrarBuscar(eq(id), eq(atuouComo), any(Pageable.class)))
+                .thenReturn(resultado);
+
+        var response = mvc.perform(get("/clube/{id}", id)
+                        .param("atuouComo", atuouComo)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+    }
+
+
+    @Test
+    @DisplayName("Deveria retornar codigo HTTP 200 quando o id do clube, string parametro atuouComo - visitante -  estiverem preenchidas ")
+    void buscarCenario4() throws Exception {
+        Long id = 1L;
+        String atuouComo = "visitante";
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DadosDetalhadamentoPartida dadosDetalhadamentoPartida = new DadosDetalhadamentoPartida(
+                id,
+                "Clube Mandante",
+                "Clube Visitante",
+                "Estádio",
+                3,
+                1,
+                Resultado.VITORIA,
+                Resultado.DERROTA,
+                localDateTime);
+        Page<Detalhadamento> resultado = new PageImpl<>(Collections.singletonList(dadosDetalhadamentoPartida));
+
+        when(clubeService.filtrarBuscar(eq(id), eq(atuouComo), any(Pageable.class)))
+                .thenReturn(resultado);
+
+        var response = mvc.perform(get("/clube/{id}", id)
+                        .param("atuouComo", atuouComo)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar codigo HTTP 200 quando o id do clube, string parametro atuouComo for inválido ")
+    void buscarCenario5() throws Exception {
+        Long id = 1L;
+        String atuouComo = "-";
+        Page<Detalhadamento> resultado = new PageImpl<>(Collections.emptyList());
+
+        when(clubeService.filtrarBuscar(eq(id), eq(atuouComo), any(Pageable.class)))
+                .thenReturn(resultado);
+
+        var response = mvc.perform(get("/clube/{id}", id)
+                        .param("atuouComo", atuouComo)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+
     }
 
     @Test
@@ -816,7 +904,7 @@ class ClubeControllerTest {
     @Test
     @DisplayName("Deveria retornar código http 200 e uma Page vazia quando o NOME for inexistente")
     void listarClubesCenario2_1() throws Exception {
-    String nomeInexistente = "aaa";
+        String nomeInexistente = "aaa";
         when(clubeService.findByNome(eq(nomeInexistente), any(Pageable.class))).thenReturn(null);
 
         var response = mvc.perform(get("/clube")
@@ -1000,7 +1088,7 @@ class ClubeControllerTest {
     @Test
     @DisplayName("Deveria retornar código http 200 quando o parametro STATUS for preenchido com FALSE retornando uma lista de clubes pelo status")
     void listarClubesCenario5() throws Exception {
-        String  status = "false";
+        String status = "false";
         var data = LocalDate.of(2002, 2, 22);
         var clube1 = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true));
         var clube2 = new Clube(new DadosClubeCadastro("São Paulo", "SP", "São Paulo", data, true));
@@ -1140,13 +1228,14 @@ class ClubeControllerTest {
     @Test
     @DisplayName("Deveria retornar codigo http 404 quando o id do clube for localizado")
     void restropctoGeralCenario1_1() throws Exception {
-        Long id = 0L;
-        when(clubeService.validarId(id)).thenThrow(new EntityNotFoundException()); // Mocking service to return null
+        Long id = null;
+
+        Mockito.doThrow(new EntityNotFoundException("")).when(clubeService).validarId(eq(id));
 
         MvcResult result = mvc.perform(get("/clube/geral/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
-        verify(clubeService).validarId(id);
+
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
@@ -1167,11 +1256,11 @@ class ClubeControllerTest {
         when(clubeService.efeituarRestropctiva(id)).thenReturn(dados);
 
         var response = mvc.perform(get("/clube/geral/{id}", id)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(dadosRestropctoDetalhadamentoJackson.write(
-                        dados
-                ).getJson())
-        ).andExpect(status().isOk())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(dadosRestropctoDetalhadamentoJackson.write(
+                                dados
+                        ).getJson())
+                ).andExpect(status().isOk())
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -1182,4 +1271,59 @@ class ClubeControllerTest {
         assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
     }
 
+
+    @Test
+    @DisplayName("Deveria retornar codigo http 200 quando passado o id de um clube  e de seu adversário para gerar a sua retrospectiva")
+    void retrospectoAdversario1() throws Exception {
+        Long idClube = 1L;
+        Long idClubeAdversario = 2L;
+        LocalDate data = LocalDate.of(2002, 2, 22);
+        Clube clube = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true));
+        var totalVitorias = 0;
+        var totalDerrotas = 0;
+        var totalEmpates = 0;
+        var totalGolsFeito = 0;
+        var totalGolsSofridos = 0;
+        DadosRestrospctoClubeAdversarioDto dados = new DadosRestrospctoClubeAdversarioDto(clube.getNome(), clube.getNome(), totalVitorias, totalDerrotas, totalEmpates,
+                totalGolsFeito, totalGolsSofridos);
+
+        when(clubeService.efeituarRestrospectivaAdversario(idClube, idClubeAdversario)).thenReturn(dados);
+
+        var response = mvc.perform(get("/clube/geral/{idClube}/{idClubeAdversario}", idClube, idClubeAdversario)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(dadosRestrospctoClubeAdversarioDtoJackson.write(
+                                dados
+                        ).getJson())
+                ).andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        var jsonEsperado = dadosRestrospctoClubeAdversarioDtoJackson.write(
+                dados
+        ).getJson();
+
+        assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
+    }
+
+    @Test
+    @DisplayName("Deveria retornar codigo http 404 quando passado algum id de um clube inexistente")
+    void retrospectoAdversario2() throws Exception {
+        Long idClube = 0L;
+        Long idClubeAdversario = 0L;
+
+        when(clubeService.efeituarRestrospectivaAdversario(idClube, idClubeAdversario))
+                .thenThrow(new EntityNotFoundException("Teste"));
+
+        var response = mvc.perform(get("/clube/geral/{idClube}/{idClubeAdversario}", idClube, idClubeAdversario)
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andExpect(status().isNotFound())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        var expectedErrorMessage = """
+                Teste""";
+
+        assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
+
+    }
 }

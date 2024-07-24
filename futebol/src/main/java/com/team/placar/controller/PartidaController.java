@@ -65,7 +65,7 @@ public class PartidaController {
     }
 
     @GetMapping("/confronto/{idClube}/{idClubeAdversario}")
-    public ResponseEntity listarClubes(@PathVariable Long idClube, @PathVariable Long idClubeAdversario) {
+    public ResponseEntity listarConfrontoClubes(@PathVariable Long idClube, @PathVariable Long idClubeAdversario) {
         var page = service.listarPartidasRetro(idClube, idClubeAdversario);
         return ResponseEntity.ok(page);
     }

@@ -98,7 +98,6 @@ public class PartidaService {
         }
 
         if (ranking.equals("goleadas")) {
-            System.out.println(ranking);
             var goleadas = repository.findPartidasByGoleadas(paginacao);
             return goleadas.map(DadosDetalhadamentoPartida::new);
         }
