@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,9 +51,6 @@ class ClubeControllerTest {
 
     @Autowired
     JacksonTester<DadosClubeCadastro> dadosCadastroJacksonTester;
-
-    @Autowired
-    JacksonTester<DadosClubeAtualizacao> dadosAtualizacaoJacksonTester;
 
     @Autowired
     JacksonTester<DadosClubeDetalhadamento> dadosDetalhadamentoJacksonTester;
@@ -92,7 +88,6 @@ class ClubeControllerTest {
                 new DadosClubeDetalhadamento(null, "Palmeiras", "SP", "São Paulo", data, true)
         ).getJson();
         assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
-
     }
 
     @Test
@@ -120,7 +115,6 @@ class ClubeControllerTest {
                 [{"campo":"nome","mensagem":"O nome do clube precisa ser inserido"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -141,7 +135,6 @@ class ClubeControllerTest {
                 [{"campo":"nome","mensagem":"O nome clube dever possuir no mínimo 2 letras"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -160,7 +153,6 @@ class ClubeControllerTest {
         var expectedErrorMessage = "Já existe um clube cadastrado com esse nome neste estado";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -177,7 +169,7 @@ class ClubeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
         var expectedErrorMessage = """
-              [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
+                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
     }
 
@@ -194,10 +186,9 @@ class ClubeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
         var expectedErrorMessage = """
-              [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
+                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -213,11 +204,9 @@ class ClubeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
         var expectedErrorMessage = """
-              [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
-
+                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -237,7 +226,6 @@ class ClubeControllerTest {
                 [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -337,7 +325,6 @@ class ClubeControllerTest {
                 [{"campo":"status","mensagem":"Você deve apenas inserir os valores true ou false"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -385,7 +372,6 @@ class ClubeControllerTest {
                 [{"campo":"nome","mensagem":"O nome do clube precisa ser inserido"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -407,7 +393,6 @@ class ClubeControllerTest {
                 [{"campo":"nome","mensagem":"O nome clube dever possuir no mínimo 2 letras"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -427,7 +412,6 @@ class ClubeControllerTest {
         var expectedErrorMessage = "Já existe um clube cadastrado com esse nome neste estado";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -446,8 +430,6 @@ class ClubeControllerTest {
                         .content(dadosCadastroJacksonTester.write(dadosAtualizados).getJson()))
                 .andReturn().getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-
-
     }
 
     @Test
@@ -468,10 +450,9 @@ class ClubeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
         var expectedErrorMessage = """
-              [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
+                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -495,7 +476,6 @@ class ClubeControllerTest {
                 [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -516,10 +496,9 @@ class ClubeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
         var expectedErrorMessage = """
-              [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
+                [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -564,7 +543,6 @@ class ClubeControllerTest {
                 [{"campo":"dataCriacao","mensagem":"Só é permitido inserir uma data no passado"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -587,7 +565,6 @@ class ClubeControllerTest {
                 [{"campo":"dataCriacao","mensagem":"Só é permitido inserir uma data no passado"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -609,7 +586,6 @@ class ClubeControllerTest {
                 [{"campo":"dataCriacao","mensagem":"O campo dataCriacao deve ser preenchido"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -617,10 +593,8 @@ class ClubeControllerTest {
     void atualizarCenario5_3() throws Exception {
         var id = 1L;
         var data = LocalDate.of(2002, 2, 22).plusYears(1);
-        LocalDateTime dataCriacaoInicioDoDia = LocalDateTime.now().minusMinutes(5L);
 
         var dadosAtualizados = new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", data, true);
-        var clube = new Clube(dadosAtualizados);
 
         when(clubeService.atualizar(any(Long.class), any(DadosClubeCadastro.class)))
                 .thenThrow(new ConflitException("Não é possível cadastrar uma data depois da data de uma partida do clube"));
@@ -637,9 +611,7 @@ class ClubeControllerTest {
                 Não é possível cadastrar uma data depois da data de uma partida do clube""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
-
 
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando o status for null e não aceita os valores true ou false")
@@ -661,9 +633,7 @@ class ClubeControllerTest {
                 [{"campo":"status","mensagem":"Você deve apenas inserir os valores true ou false"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
-
 
     @Test
     @DisplayName("Deveria retornar codigo http 204 na exclusão lógica do clube - status false")
@@ -706,7 +676,7 @@ class ClubeControllerTest {
                 "São Paulo",
                 data,
                 true
-              );
+        );
         Page<Detalhadamento> resultado = new PageImpl<>(Collections.singletonList(dadosClubeCadastro));
 
         when(clubeService.filtrarBuscar(eq(id), eq(null), any(Pageable.class)))
@@ -718,10 +688,7 @@ class ClubeControllerTest {
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-
-
     }
-
 
     @Test
     @DisplayName("Deveria retornar codigo HTTP 404 quando o clube não for encontrado pelo Id")
@@ -767,9 +734,7 @@ class ClubeControllerTest {
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-
     }
-
 
     @Test
     @DisplayName("Deveria retornar codigo HTTP 200 quando o id do clube, string parametro atuouComo - visitante -  estiverem preenchidas ")
@@ -799,7 +764,6 @@ class ClubeControllerTest {
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-
     }
 
     @Test
@@ -819,7 +783,6 @@ class ClubeControllerTest {
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-
     }
 
     @Test
@@ -954,7 +917,6 @@ class ClubeControllerTest {
                 .collect(Collectors.toList());
 
         assertThat(clubesFromResponse).isEqualTo(expectedClubes);
-
     }
 
     @Test
@@ -1064,7 +1026,6 @@ class ClubeControllerTest {
 
         assertThat(contentNode.isArray()).isTrue();
         assertThat(contentNode.size()).isEqualTo(0);
-
         verify(clubeService).filtrarParams(eq(null), eq(null), eq(localSedeErrado), eq(null), any(Pageable.class));
     }
 
@@ -1123,7 +1084,6 @@ class ClubeControllerTest {
                 .collect(Collectors.toList());
 
         assertThat(clubesFromResponse).isEqualTo(expectedClubes);
-
     }
 
     @Test
@@ -1223,6 +1183,7 @@ class ClubeControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
+        assertThat(response.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
@@ -1270,7 +1231,6 @@ class ClubeControllerTest {
 
         assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
     }
-
 
     @Test
     @DisplayName("Deveria retornar codigo http 200 quando passado o id de um clube  e de seu adversário para gerar a sua retrospectiva")
@@ -1324,6 +1284,5 @@ class ClubeControllerTest {
                 Teste""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 }

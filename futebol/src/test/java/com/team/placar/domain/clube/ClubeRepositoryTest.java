@@ -43,20 +43,19 @@ class ClubeRepositoryTest {
     @Autowired
     TestEntityManager em;
 
-
-    private LocalDateTime dataCriacaoTime = LocalDateTime.now().minusMinutes(5L);
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-    private LocalDate dataCriacao = LocalDate.parse("02-02-2022", formatter);
-    private Clube clube1 = new Clube(clubeCadastro("Palmeiras", "SP", "São Paulo", true));
-    private Clube clube2 = new Clube(clubeCadastro("São Paulo", "SP", "São Paulo", true));
-    private Clube clube3 = new Clube(clubeCadastro("Flamengo", "RJ", "Rio de Janeiro", true));
-    private Clube clubeInativo = new Clube(clubeCadastro("Botafogo", "RJ", "Rio de Janeiro", false));
-    private Estadio estadio = new Estadio(null, "Pacaembu", "São Paulo", "SP");
-    private Estadio estadio2 = new Estadio(null, "Maracanã", "Rio de Janeiro", "RJ");
-    private Partida partida = new Partida(null, clube1, clube2, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
-    private Partida partida2 = new Partida(null, clube2, clube1, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
-    private Partida partida3 = new Partida(null, clube2, clube3, estadio2, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
-    private Partida partida4 = new Partida(null, clube3, clube2, estadio2, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
+    private final LocalDateTime dataCriacaoTime = LocalDateTime.now().minusMinutes(5L);
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    private final LocalDate dataCriacao = LocalDate.parse("02-02-2022", formatter);
+    private final Clube clube1 = new Clube(clubeCadastro("Palmeiras", "SP", "São Paulo", true));
+    private final Clube clube2 = new Clube(clubeCadastro("São Paulo", "SP", "São Paulo", true));
+    private final Clube clube3 = new Clube(clubeCadastro("Flamengo", "RJ", "Rio de Janeiro", true));
+    private final Clube clubeInativo = new Clube(clubeCadastro("Botafogo", "RJ", "Rio de Janeiro", false));
+    private final Estadio estadio = new Estadio(null, "Pacaembu", "São Paulo", "SP");
+    private final Estadio estadio2 = new Estadio(null, "Maracanã", "Rio de Janeiro", "RJ");
+    private final Partida partida = new Partida(null, clube1, clube2, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
+    private final Partida partida2 = new Partida(null, clube2, clube1, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
+    private final Partida partida3 = new Partida(null, clube2, clube3, estadio2, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
+    private final Partida partida4 = new Partida(null, clube3, clube2, estadio2, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
 
 
     private Clube cadastrarClube(String nome, String siglaEstado, String localSede, Boolean status) {
@@ -75,7 +74,6 @@ class ClubeRepositoryTest {
         );
 
     }
-
 
 
     @BeforeEach

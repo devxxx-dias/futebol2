@@ -1,10 +1,8 @@
 package com.team.placar.infra.securtiy.validacoes.partidas;
 
 import com.team.placar.domain.partida.DadosCadastroPartida;
-import com.team.placar.domain.partida.Partida;
 import com.team.placar.domain.partida.PartidaRepository;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ConflitException;
-import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

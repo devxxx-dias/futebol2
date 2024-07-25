@@ -23,15 +23,15 @@ public interface PartidaRepository extends JpaRepository<Partida, Long> {
     @Query("SELECT e FROM Estadio e WHERE LOWER(e.nome) = LOWER(:nome)")
     Optional<Estadio> findEstadioByNome(String nome);
 
-    @Query("SELECT p FROM partida p WHERE p.clubeMandante.id = :id OR p.clubeVisitante.id = :id")
+    @Query("SELECT p FROM Partida p WHERE p.clubeMandante.id = :id OR p.clubeVisitante.id = :id")
     Page<Partida> findPartidaByClubeId(Long id, Pageable pageable);
 
-    @Query("SELECT  p FROM partida p WHERE p.estadio.id = :id")
+    @Query("SELECT  p FROM Partida p WHERE p.estadio.id = :id")
     Page<Partida> findPartidaByEstadioId(Long id, Pageable paginacao);
 
     @Query("""
             SELECT COUNT(p) > 0
-            FROM partida p
+            FROM Partida p
             WHERE (p.clubeMandante.id = :clubeId OR p.clubeVisitante.id = :clubeId)
             AND :dataPartida < (SELECT c.dataCriacao FROM Clube c WHERE c.id = :clubeId)
             """)
@@ -39,7 +39,7 @@ public interface PartidaRepository extends JpaRepository<Partida, Long> {
 
     @Query("""
             SELECT COUNT(p) > 0
-            FROM partida p
+            FROM Partida p
             WHERE (p.clubeMandante.id = :clubeId OR p.clubeVisitante.id = :clubeId)
             AND ABS(TIMESTAMPDIFF(HOUR , p.dataHora, :dataPartida)) < 48
             """)
@@ -51,7 +51,7 @@ public interface PartidaRepository extends JpaRepository<Partida, Long> {
 
     @Query("""
              SELECT p
-             FROM partida p
+             FROM Partida p
              WHERE (p.clubeMandante.id = :idClube AND p.clubeVisitante.id = :idClubeAdversario)
                 OR (p.clubeMandante.id = :idClubeAdversario AND p.clubeVisitante.id = :idClube)
             """)
@@ -69,7 +69,7 @@ public interface PartidaRepository extends JpaRepository<Partida, Long> {
                         WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
                         ELSE 0 END)
                 )
-                FROM partida p
+                FROM Partida p
                 JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
                 GROUP BY c.id, c.nome
                 HAVING COUNT(p) > 0
@@ -89,7 +89,7 @@ public interface PartidaRepository extends JpaRepository<Partida, Long> {
                         WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id) OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
                         ELSE 0 END)
                 )
-                FROM partida p
+                FROM Partida p
                 JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
                 GROUP BY c.id, c.nome
                 HAVING SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
@@ -113,7 +113,7 @@ public interface PartidaRepository extends JpaRepository<Partida, Long> {
                         OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
                         ELSE 0 END)
                 )
-                FROM partida p
+                FROM Partida p
                 JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
                 GROUP BY c.id, c.nome
                 HAVING SUM(CASE WHEN p.clubeMandante.id = c.id THEN p.qtdeGolsClubeMandante ELSE p.qtdeGolsClubeVisitante END) > 0
@@ -134,7 +134,7 @@ public interface PartidaRepository extends JpaRepository<Partida, Long> {
                         WHEN (p.resultadoClubeMandante = 'EMPATE' AND p.clubeMandante.id = c.id)
                         OR (p.resultadoClubeVisitante = 'EMPATE' AND p.clubeVisitante.id = c.id) THEN 1
                         ELSE 0 END))
-                FROM partida p
+                FROM Partida p
                 JOIN Clube c ON c.id = p.clubeMandante.id OR c.id = p.clubeVisitante.id
                 GROUP BY c.id, c.nome
                 HAVING SUM(CASE WHEN (p.resultadoClubeMandante = 'VITORIA' AND p.clubeMandante.id = c.id)
@@ -148,7 +148,7 @@ public interface PartidaRepository extends JpaRepository<Partida, Long> {
 
         @Query("""
         SELECT p
-        FROM partida p
+        FROM Partida p
         WHERE (p.qtdeGolsClubeMandante - p.qtdeGolsClubeVisitante) >= 3
     """)
         Page<Partida> findPartidasByGoleadas(Pageable paginacao);

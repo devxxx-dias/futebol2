@@ -1,20 +1,16 @@
 package com.team.placar.controller;
 
 
-import com.team.placar.domain.clube.DadosClubeDetalhadamento;
 import com.team.placar.domain.estadio.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
 
 @RestController
 @RequestMapping("estadio")
@@ -39,7 +35,6 @@ public class EstadioController {
     public ResponseEntity atualizar(
             @RequestBody @Valid DadosCadastroEstadio dados,
             @PathVariable Long id){
-        System.out.println(id);
         var estadio = service.atualizar(dados, id);
         return ResponseEntity.ok().body(new DadosDetalhadamentoEstadio(estadio));
     }

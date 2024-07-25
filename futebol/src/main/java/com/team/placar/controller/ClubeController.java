@@ -18,8 +18,6 @@ public class ClubeController {
     @Autowired
     private ClubeService clubeService;
 
-    @Autowired
-    private ClubeRepository clubeRepository;
 
     @PostMapping
     @Transactional

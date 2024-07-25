@@ -1,7 +1,5 @@
 package com.team.placar.domain.estadio;
 
-import jakarta.validation.constraints.NotBlank;
-
 public record DadosDetalhadamentoEstadio(
         String nome,
         String cidade,

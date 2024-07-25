@@ -8,7 +8,6 @@ import com.team.placar.domain.estadio.EstadioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -48,17 +47,17 @@ class PartidaRepositoryTest {
     TestEntityManager em;
 
 
-    private LocalDateTime dataCriacaoTime = LocalDateTime.now().minusMinutes(5L);
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-    private LocalDate dataCriacao = LocalDate.parse("02-02-2022", formatter);
-    private Clube clube1 = new Clube(clubeCadastro("Palmeiras", "SP", "São Paulo", true));
-    private Clube clube2 = new Clube(clubeCadastro("São Paulo", "SP", "São Paulo", true));
-    private Clube clube3 = new Clube(clubeCadastro("Flamengo", "RJ", "Rio de Janeiro", true));
-    private Clube clube4 = new Clube(clubeCadastro("Botafogo", "RJ", "Rio de Janeiro", true));
-    private Estadio estadio = new Estadio(null, "Pacaembu", "São Paulo", "SP");
-    private Estadio estadio2 = new Estadio(null, "Maracanã", "Rio de Janeiro", "RJ");
-    private Partida partida = new Partida(null, clube1, clube2, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
-    private Partida partida2 = new Partida(null, clube1, clube2, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
+    private final LocalDateTime dataCriacaoTime = LocalDateTime.now().minusMinutes(5L);
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    private final LocalDate dataCriacao = LocalDate.parse("02-02-2022", formatter);
+    private final Clube clube1 = new Clube(clubeCadastro("Palmeiras", "SP", "São Paulo", true));
+    private final Clube clube2 = new Clube(clubeCadastro("São Paulo", "SP", "São Paulo", true));
+    private final Clube clube3 = new Clube(clubeCadastro("Flamengo", "RJ", "Rio de Janeiro", true));
+    private final Clube clube4 = new Clube(clubeCadastro("Botafogo", "RJ", "Rio de Janeiro", true));
+    private final Estadio estadio = new Estadio(null, "Pacaembu", "São Paulo", "SP");
+    private final Estadio estadio2 = new Estadio(null, "Maracanã", "Rio de Janeiro", "RJ");
+    private final Partida partida = new Partida(null, clube1, clube2, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
+    private final Partida partida2 = new Partida(null, clube1, clube2, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
 
 
     private Clube cadastrarClube(String nome, String siglaEstado, String localSede, Boolean status) {
@@ -330,7 +329,6 @@ class PartidaRepositoryTest {
     void findRestrospecto2() {
         Long idClube = 999L;
         Long idClubeAdversario = clube2.getId();
-        var listaPartidas = List.of(partida, partida2);
 
         List<Partida> resultadoPartida = partidaRepository.findRestrospecto(idClube, idClubeAdversario);
 

@@ -2,9 +2,7 @@ package com.team.placar.domain.partida;
 
 import com.team.placar.domain.clube.ClubeRepository;
 import com.team.placar.domain.clube.ClubeService;
-import com.team.placar.domain.clube.DadosRestropctoClubeDetalhadamento;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ConflitException;
-import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
 import com.team.placar.infra.securtiy.validacoes.partidas.ValidadorPartida;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +61,7 @@ public class PartidaService {
     public Partida atualizarPartidaPeloId(DadosCadastroPartida dados, Long id) {
         var partida = validarId(id);
         validadores.forEach(d -> d.validar(dados));
-        partida.atualizarInformacoes(id, dados);
+        partida.atualizarInformacoes(dados);
         return partida;
     }
 

@@ -7,7 +7,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Entity(name = "partida")
+@Entity(name = "Partida")
 @Table(name = "partidas")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -68,7 +68,7 @@ public class Partida {
                 '}';
     }
 
-    public void atualizarInformacoes(Long id, DadosCadastroPartida dados) {
+    public void atualizarInformacoes(DadosCadastroPartida dados) {
         if (dados.nomeClubeMandante() != null) {
             this.clubeMandante.setNome(dados.nomeClubeMandante());
         }

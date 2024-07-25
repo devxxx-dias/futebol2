@@ -4,16 +4,20 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.team.placar.domain.clube.Clube;
-import com.team.placar.domain.clube.DadosClubeCadastro;
-import com.team.placar.domain.clube.DadosClubeDetalhadamento;
 import com.team.placar.domain.estadio.*;
+import com.team.placar.domain.partida.DadosCadastroPartida;
+import com.team.placar.domain.partida.Partida;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ConflitException;
 import com.team.placar.infra.securtiy.tratamentoExceptions.ValidacaoException;
+import com.team.placar.infra.securtiy.validacoes.estadios.ValidadorEstadio;
+import com.team.placar.infra.securtiy.validacoes.estadios.ValidadorEstadioExistente;
+import com.team.placar.infra.securtiy.validacoes.partidas.ValidadorPartida;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,12 +31,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -49,17 +51,30 @@ class EstadioControllerTest {
     @MockBean
     private EstadioService estadioService;
 
-    @MockBean
-    private EstadioRepository estadioRepository;
+    @Autowired
+    private JacksonTester<DadosCadastroEstadio> dadosCadastroEstadioJacksonTester;
 
     @Autowired
-    JacksonTester<DadosCadastroEstadio> dadosCadastroEstadioJacksonTester;
+    private JacksonTester<DadosDetalhadamentoEstadio> dadosDetalhadamentoEstadioJacksonTester;
 
-    @Autowired
-    JacksonTester<DadosDetalhadamentoEstadio>  dadosDetalhadamentoEstadioJacksonTester;
+    @Mock
+    private ValidadorEstadioExistente validadorEstadioExistente;
 
-    @Autowired
-    JacksonTester<Page<DadosDetalhadamentoEstadio>> dadosPageDetalhadamentoEstadioJacksonPage;
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+
+        when(estadioService.salvar(any(DadosCadastroEstadio.class)))
+                .thenAnswer(invocation -> {
+                    DadosCadastroEstadio dados = invocation.getArgument(0);
+                    for (ValidadorEstadio validador : List.of(
+                            validadorEstadioExistente
+                    )) {
+                        validador.validar(dados);
+                    }
+                    return new Estadio();
+                });
+    }
 
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando informacoes estao invalidas")
@@ -72,7 +87,7 @@ class EstadioControllerTest {
     @Test
     @DisplayName("Deveria devolver codigo http 201 e retornar um estadio for criado")
     void cadastrarCenario2() throws Exception {
-        var dadosCadastro = new DadosCadastroEstadio("Pacaembu", "São Paulo", "SP");
+        var dadosCadastro = new DadosCadastroEstadio("Corinthians", "São Paulo", "SP");
         var estadio = new Estadio(dadosCadastro);
 
         when(estadioService.salvar(dadosCadastro)).thenReturn(estadio);
@@ -87,10 +102,9 @@ class EstadioControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
 
         var jsonEsperado = dadosDetalhadamentoEstadioJacksonTester.write(
-                new DadosDetalhadamentoEstadio("Pacaembu", "São Paulo", "SP")
+                new DadosDetalhadamentoEstadio("Corinthians", "São Paulo", "SP")
         ).getJson();
         assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
-
     }
 
     @Test
@@ -98,7 +112,6 @@ class EstadioControllerTest {
     void cadastrarCenario3() throws Exception {
         String nome = "P";
         var dadosCadastro = new DadosCadastroEstadio(nome, "São Paulo", "SP");
-        var estadio = new Estadio(dadosCadastro);
 
         when(estadioService.salvar(dadosCadastro)).thenThrow(new ValidacaoException("teste"));
 
@@ -111,12 +124,10 @@ class EstadioControllerTest {
                 .andReturn().getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
-
         var expectedErrorMessage = """
                 [{"campo":"nome","mensagem":"O Nome do clube não pode ser menor que 3 letras"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -124,7 +135,6 @@ class EstadioControllerTest {
     void cadastrarCenario3_1() throws Exception {
         String nome = null;
         var dadosCadastro = new DadosCadastroEstadio(nome, "São Paulo", "SP");
-        var estadio = new Estadio(dadosCadastro);
 
         when(estadioService.salvar(dadosCadastro)).thenThrow(new ValidacaoException("teste"));
 
@@ -137,12 +147,10 @@ class EstadioControllerTest {
                 .andReturn().getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
-
         var expectedErrorMessage = """
                 [{"campo":"nome","mensagem":"O nome do estadio precisa ser infomado"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -150,7 +158,6 @@ class EstadioControllerTest {
     void cadastrarCenario3_2() throws Exception {
         String nome = "Palmeiras";
         var dadosCadastro = new DadosCadastroEstadio(nome, "São Paulo", "SP");
-        var estadio = new Estadio(dadosCadastro);
 
         when(estadioService.salvar(dadosCadastro)).thenThrow(new ConflitException("Já existe um estadio cadastrado com este nome"));
 
@@ -162,16 +169,13 @@ class EstadioControllerTest {
                 )
                 .andReturn().getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CONFLICT.value());
-
-
     }
 
     @Test
-        @DisplayName("Deveria devolver codigo http 400 quando a CIDADE possuir algum numero")
+    @DisplayName("Deveria devolver codigo http 400 quando a CIDADE possuir algum numero")
     void cadastrarCenario4() throws Exception {
         String cidade = "amarelo1";
-        var dadosCadastro = new DadosCadastroEstadio("Pacaembu", cidade, "SP");
-        var estadio = new Estadio(dadosCadastro);
+        var dadosCadastro = new DadosCadastroEstadio("Ceará", cidade, "SP");
 
         when(estadioService.salvar(dadosCadastro)).thenThrow(new ValidacaoException("teste"));
 
@@ -190,13 +194,11 @@ class EstadioControllerTest {
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
     }
 
-
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando a SIGLAESTADO não pertencer a algum estado brasileiro ")
     void cadastrarCenario5() throws Exception {
         String siglaEstado = "AA";
         var dadosCadastro = new DadosCadastroEstadio("Palmeiras", "São Paulo", siglaEstado);
-        var estadio = new Estadio(dadosCadastro);
 
         when(estadioService.salvar(dadosCadastro)).thenThrow(new ValidacaoException("teste"));
 
@@ -213,15 +215,13 @@ class EstadioControllerTest {
                 [{"campo":"siglaEstado","mensagem":"SiglaEstado deve ser um estado válido do Brasil"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
-
 
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando informacoes estao invalidas")
     void atualizarCenario1() throws Exception {
         Long id = 1L;
-        var response = mvc.perform(put("/estadio/{id}",id))
+        var response = mvc.perform(put("/estadio/{id}", id))
                 .andReturn().getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
@@ -236,7 +236,7 @@ class EstadioControllerTest {
         when(estadioService.atualizar(any(DadosCadastroEstadio.class), anyLong()))
                 .thenReturn(estadio);
 
-        var response = mvc.perform(put("/estadio/{id}",id)
+        var response = mvc.perform(put("/estadio/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroEstadioJacksonTester.write(
                                 dadosAtualizados
@@ -251,8 +251,6 @@ class EstadioControllerTest {
         assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
     }
 
-
-
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando o NOME do estadio for menor que 3 letras")
     void atualizarCenario3() throws Exception {
@@ -262,7 +260,7 @@ class EstadioControllerTest {
 
         when(estadioService.atualizar(any(DadosCadastroEstadio.class), anyLong())).thenThrow(new ValidacaoException("teste"));
 
-        var response = mvc.perform(put("/estadio/{id}",id)
+        var response = mvc.perform(put("/estadio/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroEstadioJacksonTester.write(
                                 dadosCadastro
@@ -271,12 +269,10 @@ class EstadioControllerTest {
                 .andReturn().getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
-
         var expectedErrorMessage = """
                 [{"campo":"nome","mensagem":"O Nome do clube não pode ser menor que 3 letras"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -288,7 +284,7 @@ class EstadioControllerTest {
 
         when(estadioService.atualizar(any(DadosCadastroEstadio.class), anyLong())).thenThrow(new ValidacaoException("teste"));
 
-        var response = mvc.perform(put("/estadio/{id}",id)
+        var response = mvc.perform(put("/estadio/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroEstadioJacksonTester.write(
                                 dadosCadastro
@@ -297,12 +293,10 @@ class EstadioControllerTest {
                 .andReturn().getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
-
         var expectedErrorMessage = """
                 [{"campo":"nome","mensagem":"O nome do estadio precisa ser infomado"}]""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -314,7 +308,7 @@ class EstadioControllerTest {
 
         when(estadioService.atualizar(any(DadosCadastroEstadio.class), anyLong())).thenThrow(new ConflitException("Já existe um estadio cadastrado com este nome"));
 
-        var response = mvc.perform(put("/estadio/{id}",id)
+        var response = mvc.perform(put("/estadio/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroEstadioJacksonTester.write(
                                 dadosCadastro
@@ -322,7 +316,6 @@ class EstadioControllerTest {
                 )
                 .andReturn().getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CONFLICT.value());
-
     }
 
     @Test
@@ -334,7 +327,7 @@ class EstadioControllerTest {
 
         when(estadioService.atualizar(any(DadosCadastroEstadio.class), anyLong())).thenThrow(new ValidacaoException("teste"));
 
-        var response = mvc.perform(put("/estadio/{id}",id)
+        var response = mvc.perform(put("/estadio/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroEstadioJacksonTester.write(
                                 dadosCadastro
@@ -349,7 +342,6 @@ class EstadioControllerTest {
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
     }
 
-
     @Test
     @DisplayName("Deveria devolver codigo http 400 quando a SIGLAESTADO não pertencer a algum estado brasileiro ")
     void atualizarCenario5() throws Exception {
@@ -359,7 +351,7 @@ class EstadioControllerTest {
 
         when(estadioService.atualizar(any(DadosCadastroEstadio.class), anyLong())).thenThrow(new ValidacaoException("teste"));
 
-        var response = mvc.perform(put("/estadio/{id}",id)
+        var response = mvc.perform(put("/estadio/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroEstadioJacksonTester.write(
                                 dadosCadastro
@@ -382,7 +374,7 @@ class EstadioControllerTest {
 
         when(estadioService.atualizar(any(DadosCadastroEstadio.class), anyLong())).thenThrow(new EntityNotFoundException("Estádio não localizado pelo id"));
 
-        var response = mvc.perform(put("/estadio/{id}",id)
+        var response = mvc.perform(put("/estadio/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroEstadioJacksonTester.write(
                                 dadosCadastro
@@ -395,7 +387,6 @@ class EstadioControllerTest {
                 Estádio não localizado pelo id""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -406,7 +397,7 @@ class EstadioControllerTest {
 
         when(estadioService.atualizar(any(DadosCadastroEstadio.class), anyLong())).thenThrow(new ConflitException("Já existe um estadio cadastrado com esse nome"));
 
-        var response = mvc.perform(put("/estadio/{id}",id)
+        var response = mvc.perform(put("/estadio/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroEstadioJacksonTester.write(
                                 dadosCadastro
@@ -417,10 +408,7 @@ class EstadioControllerTest {
 
         var expectedErrorMessage = """
                 Já existe um estadio cadastrado com esse nome""";
-
-
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -433,7 +421,7 @@ class EstadioControllerTest {
         when(estadioService.buscarId(anyLong()))
                 .thenReturn(estadio);
 
-        var response = mvc.perform(get("/estadio/{id}",id)
+        var response = mvc.perform(get("/estadio/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroEstadioJacksonTester.write(
                                 dadosAtualizados
@@ -448,7 +436,6 @@ class EstadioControllerTest {
         assertThat(response.getContentAsString()).isEqualTo(jsonEsperado);
     }
 
-
     @Test
     @DisplayName("Deveria devolver codigo http 404 quando não for localizado o id do estadio para ser atualizado")
     void buscarEstadioCenario2() throws Exception {
@@ -457,7 +444,7 @@ class EstadioControllerTest {
 
         when(estadioService.buscarId(anyLong())).thenThrow(new EntityNotFoundException("Estádio não localizado pelo id"));
 
-        var response = mvc.perform(get("/estadio/{id}",id)
+        var response = mvc.perform(get("/estadio/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(dadosCadastroEstadioJacksonTester.write(
                                 dadosCadastro
@@ -470,11 +457,6 @@ class EstadioControllerTest {
                 Estádio não localizado pelo id""";
 
         assertThat(response.getContentAsString()).isEqualTo(expectedErrorMessage);
-
-    }
-
-    @Test
-    void listarEstadios() {
     }
 
     @Test
@@ -517,5 +499,4 @@ class EstadioControllerTest {
 
         verify(estadioService).listarEstadios(any(Pageable.class));
     }
-
 }

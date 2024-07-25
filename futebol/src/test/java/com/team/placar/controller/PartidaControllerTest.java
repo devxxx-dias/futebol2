@@ -74,16 +74,16 @@ class PartidaControllerTest {
     private ValidadorPartida validadorMesmoHorarioEstadio;
 
     @Mock
-    ValidadorPartida validadorPartidaAntesDataCriacaoClube;
+    private ValidadorPartida validadorPartidaAntesDataCriacaoClube;
 
     @Mock
-    ValidadorPartida validadorPartidaHorariosProximos;
+    private ValidadorPartida validadorPartidaHorariosProximos;
 
     @Mock
-    ValidadorPartida validadorVitoriaClubeMandante;
+    private ValidadorPartida validadorVitoriaClubeMandante;
 
     @Mock
-    ValidadorPartida validadorVitoriaClubeVisitante;
+    private ValidadorPartida validadorVitoriaClubeVisitante;
 
 
     @BeforeEach
@@ -124,8 +124,8 @@ class PartidaControllerTest {
     @Autowired
     JacksonTester<Page<DadosDetalhadamentoPartida>> dadosDetalhadamentoJacksonTesterPage;
 
-    private LocalDateTime data = LocalDate.of(2002, 2, 22).atStartOfDay();
-    private DadosCadastroPartida dadosCadastroPartida = new DadosCadastroPartida("Palmeiras",
+    private final LocalDateTime data = LocalDate.of(2002, 2, 22).atStartOfDay();
+    private final DadosCadastroPartida dadosCadastroPartida = new DadosCadastroPartida("Palmeiras",
             "Flamento",
             "Pacaembu",
             5,
@@ -136,19 +136,19 @@ class PartidaControllerTest {
     );
 
 
-    private LocalDate dataCriacao = LocalDate.of(2002, 2, 22).plusDays(2);
-    private Clube clubeMandante = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", dataCriacao, true));
-    private Clube clubeVisitante = new Clube(new DadosClubeCadastro("Flamento", "RJ", "Rio de Janeiro", dataCriacao, true));
-    private Estadio estadioSp = new Estadio(new DadosCadastroEstadio("Pacaembu", "São Paulo", "SP"));
-    private Estadio estadioRj = new Estadio(new DadosCadastroEstadio("Maracana", "Rio de Janeiro", "RJ"));
-    private int qtdeGolVitoria = 5;
-    private int qtdeGolDerrota = 1;
-    private Resultado resultadoVitoria = Resultado.VITORIA;
-    private Resultado resultadoDerrota = Resultado.DERROTA;
-    private Resultado resultadoEmpate = Resultado.EMPATE;
+    private final LocalDate dataCriacao = LocalDate.of(2002, 2, 22).plusDays(2);
+    private final Clube clubeMandante = new Clube(new DadosClubeCadastro("Palmeiras", "SP", "São Paulo", dataCriacao, true));
+    private final Clube clubeVisitante = new Clube(new DadosClubeCadastro("Flamento", "RJ", "Rio de Janeiro", dataCriacao, true));
+    private final Estadio estadioSp = new Estadio(new DadosCadastroEstadio("Pacaembu", "São Paulo", "SP"));
+    private final Estadio estadioRj = new Estadio(new DadosCadastroEstadio("Maracana", "Rio de Janeiro", "RJ"));
+    private final int qtdeGolVitoria = 5;
+    private final int qtdeGolDerrota = 1;
+    private final Resultado resultadoVitoria = Resultado.VITORIA;
+    private final Resultado resultadoDerrota = Resultado.DERROTA;
+    private final Resultado resultadoEmpate = Resultado.EMPATE;
 
 
-    private Partida partidaMandanteVitoria = new Partida(
+    private final Partida partidaMandanteVitoria = new Partida(
             clubeMandante,
             clubeVisitante,
             estadioSp,
@@ -158,7 +158,7 @@ class PartidaControllerTest {
             resultadoDerrota,
             data);
 
-    private Partida partidaMandanteDerrota = new Partida(
+    private final Partida partidaMandanteDerrota = new Partida(
             clubeMandante,
             clubeVisitante,
             estadioRj,
@@ -169,7 +169,7 @@ class PartidaControllerTest {
             data);
 
 
-    private Partida partidaEmpate = new Partida(
+    private final Partida partidaEmpate = new Partida(
             clubeMandante,
             clubeVisitante,
             estadioSp,
@@ -179,7 +179,7 @@ class PartidaControllerTest {
             resultadoEmpate,
             data);
 
-    private DadosDetalhadamentoPartida dadosDetalhadamentoPartida = new DadosDetalhadamentoPartida(partidaMandanteVitoria);
+    private final DadosDetalhadamentoPartida dadosDetalhadamentoPartida = new DadosDetalhadamentoPartida(partidaMandanteVitoria);
 
     @Test
     @DisplayName("Deveria devolver codigo http 201 e retornar uma partida for  criada")
