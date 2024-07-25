@@ -43,7 +43,7 @@ public interface ClubeRepository  extends JpaRepository<Clube, Long> {
 
 
     @Query("SELECT p FROM partida p WHERE p.clubeMandante.id = :clubeId")
-    Page<Partida> findByClubeMandante(@Param("clubeId") Long clubeId, Pageable pageable);
+    Page<Partida> findByClubeMandante(Long clubeId, Pageable pageable);
 
     @Query("SELECT p FROM partida p WHERE p.clubeVisitante.id = :clubeId")
     Page<Partida> findByClubeVisitante(@Param("clubeId") Long clubeId, Pageable pageable);

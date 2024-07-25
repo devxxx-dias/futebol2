@@ -1,12 +1,10 @@
 package com.team.placar.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.team.placar.domain.clube.Clube;
 import com.team.placar.domain.clube.DadosClubeCadastro;
-import com.team.placar.domain.clube.DadosClubeDetalhadamento;
 import com.team.placar.domain.estadio.DadosCadastroEstadio;
 import com.team.placar.domain.estadio.Estadio;
 import com.team.placar.domain.partida.*;
@@ -35,15 +33,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -96,7 +93,8 @@ class PartidaControllerTest {
         when(partidaService.salvar(any(DadosCadastroPartida.class)))
                 .thenAnswer(invocation -> {
                     DadosCadastroPartida dados = invocation.getArgument(0);
-                    for (ValidadorPartida validador : List.of(validadorClubeRepetido,
+                    for (ValidadorPartida validador : List.of(
+                            validadorClubeRepetido,
                             validadorClubesExistentes,
                             validadorDerrotaClube,
                             validadorEhClubeMandante,

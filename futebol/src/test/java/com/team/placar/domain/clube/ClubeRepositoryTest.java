@@ -2,7 +2,6 @@ package com.team.placar.domain.clube;
 
 import com.team.placar.domain.estadio.Estadio;
 import com.team.placar.domain.estadio.EstadioRepository;
-import com.team.placar.domain.partida.DadosCadastroPartida;
 import com.team.placar.domain.partida.Partida;
 import com.team.placar.domain.partida.PartidaRepository;
 import com.team.placar.domain.partida.Resultado;
@@ -19,12 +18,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,7 +54,9 @@ class ClubeRepositoryTest {
     private Estadio estadio = new Estadio(null, "Pacaembu", "São Paulo", "SP");
     private Estadio estadio2 = new Estadio(null, "Maracanã", "Rio de Janeiro", "RJ");
     private Partida partida = new Partida(null, clube1, clube2, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
-    private Partida partida2 = new Partida(null, clube1, clube2, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
+    private Partida partida2 = new Partida(null, clube2, clube1, estadio, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
+    private Partida partida3 = new Partida(null, clube2, clube3, estadio2, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
+    private Partida partida4 = new Partida(null, clube3, clube2, estadio2, 10, 5, Resultado.VITORIA, Resultado.DERROTA, dataCriacaoTime);
 
 
     private Clube cadastrarClube(String nome, String siglaEstado, String localSede, Boolean status) {
@@ -76,45 +76,6 @@ class ClubeRepositoryTest {
 
     }
 
-    private Partida cadastrarPartida(Clube clube1, Clube clube2, Estadio estadio) {
-
-        var partida = new Partida(
-                null,
-                clube1,
-                clube2,
-                estadio,
-                5,
-                0,
-                Resultado.VITORIA,
-                Resultado.DERROTA,
-                dataCriacaoTime);
-        em.persist(partida);
-
-        return partida;
-    }
-
-    private DadosCadastroPartida partidaCadastro(
-            String nomeClubeMandante,
-            String nomeClubeVisitante,
-            String nomeEstadio,
-            Integer qtdeGolsClubeMandante,
-            Integer qtdeGolsClubeVisitante,
-            Resultado resultadoClubeMandante,
-            Resultado resultadoClubeVisitante,
-            LocalDateTime dataHora
-    ) {
-        return new DadosCadastroPartida(
-                nomeClubeMandante,
-                nomeClubeVisitante,
-                nomeEstadio,
-                qtdeGolsClubeMandante,
-                qtdeGolsClubeVisitante,
-                resultadoClubeMandante,
-                resultadoClubeVisitante,
-                dataHora
-
-        );
-    }
 
 
     @BeforeEach
@@ -128,6 +89,8 @@ class ClubeRepositoryTest {
         em.persist(estadio2);
         em.persist(partida);
         em.persist(partida2);
+        em.persist(partida3);
+        em.persist(partida4);
         em.flush();
     }
 
@@ -135,7 +98,9 @@ class ClubeRepositoryTest {
     @DisplayName("Deveria retornar null quando o id não for encontrado ou quando o perfil estiver inativo")
     void findByIdAndStatusCenario1() {
         Long idTest = clubeInativo.getId();
+
         var clubeInativo = clubeRepository.findByIdAndStatus(idTest);
+
         assertThat(clubeInativo).isEmpty();
 
     }
@@ -152,28 +117,32 @@ class ClubeRepositoryTest {
     @DisplayName("Deveria retornar uma lista vazia quando o id do clube não constar em alguma partida para o retorspecto")
     void findRestrospectoCenario1() {
         Long idTest = -1L;
+
         var retrospecto = clubeRepository.findRestrospecto(idTest);
+
         assertThat(retrospecto).isEmpty();
     }
 
     @Test
     @DisplayName("Deveria retornar uma lista de retrospecto com o id do clube sendo clube mandante e visitante de todas as partidas")
     void findRestrospectoCenario2() {
-        Long clubeId = clube1.getId();
+        Long idClube = clube1.getId();
+        var listaPartidas = List.of(partida, partida2);
 
-        List<Partida> retrospecto = clubeRepository.findRestrospecto(clubeId);
+        List<Partida> resultadoPartida = clubeRepository.findRestrospecto(idClube);
 
-        assertThat(retrospecto).extracting("clubeMandante")
-                .allMatch(clube -> ((Clube) clube).getId().equals(clubeId) || ((Partida) clube).getClubeVisitante().getId().equals(clubeId));
+        assertThat(resultadoPartida).isNotEmpty();
+        assertThat(resultadoPartida.size()).isEqualTo(listaPartidas.size());
+        assertThat(resultadoPartida).containsExactlyElementsOf(listaPartidas);
     }
 
     @Test
-    @DisplayName("Deveria retornar uma pagina de clube através do seu ID ")
+    @DisplayName("Deveria retornar uma pagina de partidas  através do ID do clube sendo ele mandante ou visitante")
     void findRestrospectoPaginado1() {
         Long idTeste = clube1.getId();
-
         var listaPartidas = List.of(partida, partida2);
         Page<Partida> paginacaoPartida = new PageImpl<>(listaPartidas);
+
         Pageable paginacao = PageRequest.of(0, 10);
         Page<Partida> resultadoClubes = clubeRepository.findRestrospectoPaginado(idTeste, paginacao);
 
@@ -184,17 +153,14 @@ class ClubeRepositoryTest {
     }
 
     @Test
-    @DisplayName("Deveria retornar uma lista de retrospecto com o id do clube sendo clube mandante e visitante de todas as partidas")
+    @DisplayName("Deveria retornar uma pagina vazia caso o id do clube for null ou não estiver no banco de dados")
     void findRestrospectoPaginado2() {
         Long idTeste = 99999L;
 
-        Page<Partida> paginaVazia = Page.empty();
         Pageable paginacao = PageRequest.of(0, 10);
         Page<Partida> resultadoClubes = clubeRepository.findRestrospectoPaginado(idTeste, paginacao);
 
         assertThat(resultadoClubes).isEmpty();
-        assertThat(resultadoClubes.getTotalElements()).isEqualTo(0);
-        assertThat(resultadoClubes.getContent()).containsExactlyElementsOf(paginaVazia.getContent());
 
     }
 
@@ -202,15 +168,14 @@ class ClubeRepositoryTest {
     @DisplayName("Deveria retornar uma pagina com o  clube localizado pelo id")
     void findByNomeContaining1() {
         String clubeNomeTest = clube1.getNome();
+        Page<Clube> clubePage = new PageImpl<>(Collections.singletonList(clube1));
 
-        var listaClube = List.of(clube1, clube2, clube3, clubeInativo);
-        Page<Clube> paginacaoClube = new PageImpl<>(listaClube);
         Pageable paginacao = PageRequest.of(0, 10);
-
         Page<Clube> clubetest = clubeRepository.findByNomeContaining(clubeNomeTest, paginacao);
-        assertThat(paginacaoClube).isNotEmpty();
-        assertThat(paginacaoClube.getTotalElements()).isEqualTo(listaClube.size());
-        assertThat(paginacaoClube.getContent()).containsExactlyElementsOf(paginacaoClube.getContent());
+
+        assertThat(clubetest).isNotEmpty();
+        assertThat(clubetest.getTotalElements()).isEqualTo(1);
+        assertThat(clubetest.getContent()).containsExactlyElementsOf(clubePage.getContent());
 
     }
 
@@ -219,13 +184,10 @@ class ClubeRepositoryTest {
     void findByNomeContaining2() {
         String nomeTeste = "XXXX";
 
-        Page<Clube> paginaVazia = Page.empty();
         Pageable paginacao = PageRequest.of(0, 10);
         Page<Clube> resultadoClubes = clubeRepository.findByNomeContaining(nomeTeste, paginacao);
 
         assertThat(resultadoClubes).isEmpty();
-        assertThat(resultadoClubes.getTotalElements()).isEqualTo(0);
-        assertThat(resultadoClubes.getContent()).containsExactlyElementsOf(paginaVazia.getContent());
     }
 
     @Test
@@ -233,11 +195,9 @@ class ClubeRepositoryTest {
     void findBySiglaEstadoContaining1() {
         String siglaEstadoTest = clube1.getSiglaEstado();
 
-        var listaClube = List.of(clube1, clube2, clube3, clubeInativo);
-        Page<Clube> paginacaoClube = new PageImpl<>(listaClube);
         Pageable paginacao = PageRequest.of(0, 10);
-
         Page<Clube> clubetest = clubeRepository.findBySiglaEstadoContaining(siglaEstadoTest, paginacao);
+
         assertThat(clubetest).isNotEmpty();
 
     }
@@ -247,13 +207,11 @@ class ClubeRepositoryTest {
     void findBySiglaEstadoContaining2() {
         String siglaEstadoTest = "XXXX";
 
-        Page<Clube> paginaVazia = Page.empty();
         Pageable paginacao = PageRequest.of(0, 10);
         Page<Clube> resultadoClubes = clubeRepository.findBySiglaEstadoContaining(siglaEstadoTest, paginacao);
 
         assertThat(resultadoClubes).isEmpty();
-        assertThat(resultadoClubes.getTotalElements()).isEqualTo(0);
-        assertThat(resultadoClubes.getContent()).containsExactlyElementsOf(paginaVazia.getContent());
+
     }
 
     @Test
@@ -261,11 +219,9 @@ class ClubeRepositoryTest {
     void findByLocalSede1() {
         String localSedeTest = clube1.getLocalSede();
 
-        var listaClube = List.of(clube1, clube2, clube3, clubeInativo);
-        Page<Clube> paginacaoClube = new PageImpl<>(listaClube);
         Pageable paginacao = PageRequest.of(0, 10);
-
         Page<Clube> clubetest = clubeRepository.findByLocalSede(localSedeTest, paginacao);
+
         assertThat(clubetest).isNotEmpty();
 
     }
@@ -275,13 +231,10 @@ class ClubeRepositoryTest {
     void findByLocalSede2() {
         String localSedeTest = "XXXX";
 
-        Page<Clube> paginaVazia = Page.empty();
         Pageable paginacao = PageRequest.of(0, 10);
         Page<Clube> resultadoClubes = clubeRepository.findByLocalSede(localSedeTest, paginacao);
 
         assertThat(resultadoClubes).isEmpty();
-        assertThat(resultadoClubes.getTotalElements()).isEqualTo(0);
-        assertThat(resultadoClubes.getContent()).containsExactlyElementsOf(paginaVazia.getContent());
     }
 
     @Test
@@ -289,11 +242,9 @@ class ClubeRepositoryTest {
     void findByStatus1() {
         Boolean statusTest = clube1.getStatus();
 
-        var listaClube = List.of(clube1, clube2, clube3, clubeInativo);
-        Page<Clube> paginacaoClube = new PageImpl<>(listaClube);
         Pageable paginacao = PageRequest.of(0, 10);
-
         Page<Clube> clubetest = clubeRepository.findByStatus(statusTest, paginacao);
+
         assertThat(clubetest).isNotEmpty();
     }
 
@@ -302,11 +253,10 @@ class ClubeRepositoryTest {
     void findByStatus2() {
         Boolean statusTest = clubeInativo.getStatus();
 
-        var listaClube = List.of(clube1, clube2, clube3, clubeInativo);
-        Page<Clube> paginacaoClube = new PageImpl<>(listaClube);
         Pageable paginacao = PageRequest.of(0, 10);
 
         Page<Clube> clubetest = clubeRepository.findByStatus(statusTest, paginacao);
+
         assertThat(clubetest).isNotEmpty();
     }
 
@@ -318,6 +268,7 @@ class ClubeRepositoryTest {
         String siglaEstadoTest = clube1.getSiglaEstado();
 
         Boolean clubetest = clubeRepository.existsByNomeAndSiglaEstado(clubeNomeTest, siglaEstadoTest);
+
         assertThat(clubetest).isTrue();
 
     }
@@ -329,6 +280,7 @@ class ClubeRepositoryTest {
         String siglaEstadoTest = "XXXX";
 
         Boolean clubetest = clubeRepository.existsByNomeAndSiglaEstado(clubeNomeTest, siglaEstadoTest);
+
         assertThat(clubetest).isFalse();
     }
 
@@ -337,7 +289,9 @@ class ClubeRepositoryTest {
     void existsPartidasByClubeIdAndDataBefore1() {
         Long clubeId = clube1.getId();
         LocalDateTime now = LocalDateTime.now();
+
         var existeData = clubeRepository.existsPartidasByClubeIdAndDataBefore(clubeId, now);
+
         assertThat(existeData).isTrue();
     }
 
@@ -346,8 +300,87 @@ class ClubeRepositoryTest {
     void existsPartidasByClubeIdAndDataBefore2() {
         Long clubeId = clube1.getId();
         LocalDateTime now = LocalDateTime.now().minusYears(1L);
+
         var existeData = clubeRepository.existsPartidasByClubeIdAndDataBefore(clubeId, now);
+
         assertThat(existeData).isFalse();
+    }
+
+    @Test
+    @DisplayName("Deveria retornar uma pagina com as partidas do clube mandante através do seu ID ")
+    void findByClubeMandante1() {
+        Long clubeId = clube2.getId();
+
+        Pageable paginacao = PageRequest.of(0, 10);
+        Page<Partida> resultadoClubes = clubeRepository.findByClubeMandante(clubeId, paginacao);
+
+        assertThat(resultadoClubes).isNotEmpty();
+        assertThat(resultadoClubes.getTotalElements()).isEqualTo(2);
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar uma pagina vazia caso clube passado não tiver nenhuma partida")
+    void findByClubeMandante2() {
+        Long clubeId = clubeInativo.getId();
+
+        Pageable paginacao = PageRequest.of(0, 10);
+        Page<Partida> resultadoClubes = clubeRepository.findByClubeMandante(clubeId, paginacao);
+
+        assertThat(resultadoClubes).isEmpty();
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar uma pagina com as partidas do clube visitante através do seu ID ")
+    void findByClubeVisitante1() {
+        Long clubeId = clube2.getId();
+
+        Pageable paginacao = PageRequest.of(0, 10);
+        Page<Partida> resultadoClubes = clubeRepository.findByClubeVisitante(clubeId, paginacao);
+
+        assertThat(resultadoClubes).isNotEmpty();
+        assertThat(resultadoClubes.getTotalElements()).isEqualTo(2);
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar uma pagina vazia caso o clube visitante não participou de alguma partida ")
+    void findByClubeVisitante2() {
+        Long clubeId = clubeInativo.getId();
+
+        Pageable paginacao = PageRequest.of(0, 10);
+        Page<Partida> resultadoClubes = clubeRepository.findByClubeVisitante(clubeId, paginacao);
+
+        assertThat(resultadoClubes).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deveria retornar a pagina com o clube identificado ")
+    void findByIdPage1() {
+        Long idClube = clube1.getId();
+        Page<Clube> clubePage = new PageImpl<>(Collections.singletonList(clube1));
+
+        Pageable paginacao = PageRequest.of(0, 10);
+        Page<Clube> clubeIdentificado = clubeRepository.findByIdPage(idClube, paginacao);
+
+        assertThat(clubeIdentificado).isNotEmpty();
+        assertThat(clubeIdentificado.getTotalElements()).isEqualTo(1);
+        assertThat(clubeIdentificado).containsExactlyElementsOf(clubePage);
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar a pagina vazia caso o clube não exista")
+    void findByIdPage2() {
+        Long idClube = 999L;
+
+        Pageable paginacao = PageRequest.of(0, 10);
+        Page<Clube> clubeIdentificado = clubeRepository.findByIdPage(idClube, paginacao);
+
+
+        assertThat(clubeIdentificado).isEmpty();
+
     }
 
 }

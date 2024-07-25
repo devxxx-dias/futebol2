@@ -3,16 +3,12 @@ package com.team.placar.domain.partida;
 import com.team.placar.domain.clube.Clube;
 import com.team.placar.domain.clube.ClubeRepository;
 import com.team.placar.domain.clube.DadosClubeCadastro;
-import com.team.placar.domain.clube.DadosClubeDetalhadamento;
 import com.team.placar.domain.estadio.Estadio;
 import com.team.placar.domain.estadio.EstadioRepository;
-import com.team.placar.domain.partida.DadosCadastroPartida;
-import com.team.placar.domain.partida.Partida;
-import com.team.placar.domain.partida.PartidaRepository;
-import com.team.placar.domain.partida.Resultado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -313,5 +309,122 @@ class PartidaRepositoryTest {
 
         var existeData = partidaRepository.existsPartidaByEstadio_IdAndDataHoraBetween(idTest, dataHoraInicio, dataHoraFim);
         assertThat(existeData).isFalse();
+    }
+
+    @Test
+    @DisplayName("Deveria retornar uma Lista de partida quando os idClube e IdClubeAdversario forem inseridos corretamente")
+    void findRestrospecto1() {
+        Long idClube = clube1.getId();
+        Long idClubeAdversario = clube2.getId();
+        var listaPartidas = List.of(partida, partida2);
+        
+        List<Partida> resultadoPartida = partidaRepository.findRestrospecto(idClube, idClubeAdversario);
+
+        assertThat(resultadoPartida).isNotEmpty();
+        assertThat(resultadoPartida.size()).isEqualTo(listaPartidas.size());
+        assertThat(resultadoPartida).containsExactlyElementsOf(listaPartidas);
+    }
+
+    @Test
+    @DisplayName("Deveria retornar uma Lista de partida vazia um dos idClube ou IdClubeAdversario forem inseridos incorretamente")
+    void findRestrospecto2() {
+        Long idClube = 999L;
+        Long idClubeAdversario = clube2.getId();
+        var listaPartidas = List.of(partida, partida2);
+
+        List<Partida> resultadoPartida = partidaRepository.findRestrospecto(idClube, idClubeAdversario);
+
+        assertThat(resultadoPartida).isEmpty();
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar uma pagina de ranking dos clubes que mais jogaram")
+    void findRankingByTotalJogos() {
+        Long idClube = clube1.getId();
+        Long idClubeAdversario = clube2.getId();
+        ClubeRankingDTO ranking1 = new ClubeRankingDTO(idClube, clube1.getNome(), 2L, 2L, 20L, 6L);
+        ClubeRankingDTO ranking2 = new ClubeRankingDTO(idClubeAdversario, clube2.getNome(), 2L, 0L, 10L, 0L);
+        var listaRanking = List.of(ranking1, ranking2);
+        Page<ClubeRankingDTO> paginacaoPartida = new PageImpl<>(listaRanking);
+
+        Pageable paginacao = PageRequest.of(0, 10);
+        Page<ClubeRankingDTO> resultadoRanking = partidaRepository.findRankingByTotalJogos(paginacao);
+
+        assertThat(resultadoRanking.getTotalElements()).isEqualTo(listaRanking.size());
+        assertThat(resultadoRanking.getContent()).containsExactlyElementsOf(paginacaoPartida.getContent());
+    }
+
+
+    @Test
+    @DisplayName("Deveria retornar uma pagina de ranking dos clubes que mais obtiveram vitorias")
+    void findRankingByTotalVitorias() {
+        Long idClube = clube1.getId();
+        Long idClubeAdversario = clube2.getId();
+        ClubeRankingDTO ranking1 = new ClubeRankingDTO(idClube, clube1.getNome(), 2L, 2L, 20L, 6L);
+        ClubeRankingDTO ranking2 = new ClubeRankingDTO(idClubeAdversario, clube2.getNome(), 2L, 0L, 10L, 0L);
+        var listaRanking = List.of(ranking1, ranking2);
+        Page<ClubeRankingDTO> paginacaoPartida = new PageImpl<>(listaRanking);
+
+        Pageable paginacao = PageRequest.of(0, 10);
+        Page<ClubeRankingDTO> resultadoRanking = partidaRepository.findRankingByTotalJogos(paginacao);
+
+        assertThat(resultadoRanking.getTotalElements()).isEqualTo(listaRanking.size());
+        assertThat(resultadoRanking.getContent()).containsExactlyElementsOf(paginacaoPartida.getContent());
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar uma pagina de ranking dos clubes que mais fizeram mais gols")
+    void findRankingByTotalGols() {
+        Long idClube = clube1.getId();
+        Long idClubeAdversario = clube2.getId();
+        ClubeRankingDTO ranking1 = new ClubeRankingDTO(idClube, clube1.getNome(), 2L, 2L, 20L, 6L);
+        ClubeRankingDTO ranking2 = new ClubeRankingDTO(idClubeAdversario, clube2.getNome(), 2L, 0L, 10L, 0L);
+        var listaRanking = List.of(ranking1, ranking2);
+        Page<ClubeRankingDTO> paginacaoPartida = new PageImpl<>(listaRanking);
+
+        Pageable paginacao = PageRequest.of(0, 10);
+        Page<ClubeRankingDTO> resultadoRanking = partidaRepository.findRankingByTotalJogos(paginacao);
+
+        assertThat(resultadoRanking.getTotalElements()).isEqualTo(listaRanking.size());
+        assertThat(resultadoRanking.getContent()).containsExactlyElementsOf(paginacaoPartida.getContent());
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar uma pagina de ranking dos clubes que mais tiveram mais pontos")
+    void findRankingByTotalPontos() {
+        Long idClube = clube1.getId();
+        Long idClubeAdversario = clube2.getId();
+        ClubeRankingDTO ranking1 = new ClubeRankingDTO(idClube, clube1.getNome(), 2L, 2L, 20L, 6L);
+        ClubeRankingDTO ranking2 = new ClubeRankingDTO(idClubeAdversario, clube2.getNome(), 2L, 0L, 10L, 0L);
+        var listaRanking = List.of(ranking1, ranking2);
+        Page<ClubeRankingDTO> paginacaoPartida = new PageImpl<>(listaRanking);
+
+        Pageable paginacao = PageRequest.of(0, 10);
+        Page<ClubeRankingDTO> resultadoRanking = partidaRepository.findRankingByTotalJogos(paginacao);
+
+        assertThat(resultadoRanking.getTotalElements()).isEqualTo(listaRanking.size());
+        assertThat(resultadoRanking.getContent()).containsExactlyElementsOf(paginacaoPartida.getContent());
+
+    }
+
+    @Test
+    @DisplayName("Deveria retornar uma pagina de ranking dos clubes que realizaram mais goleadas (mais de 3 gols de diferença) contra seus adversario")
+    void findPartidasByGoleadas() {
+        Long idClube = clube1.getId();
+        Long idClubeAdversario = clube2.getId();
+        ClubeRankingDTO ranking1 = new ClubeRankingDTO(idClube, clube1.getNome(), 2L, 2L, 20L, 6L);
+        ClubeRankingDTO ranking2 = new ClubeRankingDTO(idClubeAdversario, clube2.getNome(), 2L, 0L, 10L, 0L);
+        var listaRanking = List.of(ranking1, ranking2);
+        Page<ClubeRankingDTO> paginacaoPartida = new PageImpl<>(listaRanking);
+
+        Pageable paginacao = PageRequest.of(0, 10);
+        Page<ClubeRankingDTO> resultadoRanking = partidaRepository.findRankingByTotalJogos(paginacao);
+
+        assertThat(resultadoRanking.getTotalElements()).isEqualTo(listaRanking.size());
+        assertThat(resultadoRanking.getContent()).containsExactlyElementsOf(paginacaoPartida.getContent());
+
     }
 }
